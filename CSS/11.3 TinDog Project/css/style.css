@@ -1,0 +1,87 @@
+.gradient-background {
+  width: 100%;
+  background: linear-gradient(300deg, #00bfff, #ff4c68, #ef8172);
+  background-size: 180% 180%;
+  animation: gradient-animation 18s ease infinite;
+}
+
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.icon-square {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+}
+
+.profile-img {
+  height: 100px;
+  border-radius: 50%;
+}
+
+.icon{
+  background-color: #3333; padding: 5px; box-sizing: content-box; border-radius: 10%;
+}
+
+.rounded{
+  border-radius: 10%;
+}
+
+#pricing .card button{
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  margin-bottom: 10px;
+  width: 80%;
+}
+
+#pricing .card li:last-child{
+  margin-bottom: 50px;
+}
+
+
+small{
+  font-size: 0.8em;
+  font-weight: 100;
+}
+
+#pricing div.card{
+  margin-bottom: 20px;
+}
+
+#pricing div.card-title{
+  padding-top: 10px;
+}
+
+
+#pricing div.card h3, #pricing div.card h1, #pricing div.card ul{
+  text-align: center;
+}
+
+#flex{
+  margin: auto;
+  width: 80%;
+}
+
+
+@media(max-width: 800px){
+  #pricing div.card{
+    margin-bottom: 20px;
+    width: 90%;
+  }
+
+  #flex{
+    flex-wrap: wrap;
+    width: 95%;
+  }
+}
+
