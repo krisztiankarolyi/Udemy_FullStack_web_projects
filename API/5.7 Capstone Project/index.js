@@ -16,28 +16,33 @@ app.use(express.static("public"));
 app.use(express.json()); 
 
 app.get("/", function (req, res) {
-   res.render("index.ejs", {total: 0.0});
+    const total = req.query.total || 0;
+   res.render("index.ejs", {total: total});
 });
+
 
 app.post("/", async (req, res) => {
     try {
         const portfolioData = req.body;  
-        console.log("Beérkező adatok:", portfolioData.portfolio);
-        const crypto_names = portfolioData.portfolio.map(item => item.ISO);
+       // console.log("Beérkező adatok:", portfolioData.portfolio);
+        const crypto_names = Object.keys(portfolioData.portfolio);
         const quantities = portfolioData.portfolio;
 
         // Megvárjuk a getPrices Promise teljesítését
         const prices = await getPrices(crypto_names); 
-        let total = accumulate(prices, quantities);
-        console.log("total ar: ", total);
-        
-        // A válasz küldése
-        res.render("index.ejs", {'total': 0, 'prices': prices });
+        let date = prices["timestamp"]
+        let total = sumproduct(prices, quantities);
+        delete prices["timestamp"]
+
+        res.json({ total: total, date: date, prices: prices });
+
+
     } catch (error) {
         console.error("Hiba történt az API-hívás során:", error);
         res.status(500).json({ error: "Hiba történt az adatok továbbításakor" });
     }
 });
+
 
 
 app.listen(port, () => {
@@ -72,7 +77,7 @@ async function refreshStocks(){
 
 }
 
-function getPrices(cryptos) {
+async function getPrices(cryptos) {
     return new Promise((resolve, reject) => {
         var filePath = './public/db.json';
         var dict = {};
@@ -85,6 +90,26 @@ function getPrices(cryptos) {
             }
 
             const db = JSON.parse(data);
+            const timestamp = db.status.timestamp;
+            dict["timestamp"] = timestamp;
+
+            try {
+                const lastUpdate = new Date(timestamp);
+                const now = new Date();
+                const diffInHours = (now - lastUpdate) / (1000 * 60 * 60); 
+        
+                if (diffInHours > 2) {
+                    console.log("Data are outdated, updating...");
+                    refreshStocks();
+                } else {
+                    console.log("Data are still okay");
+                }
+            } catch (parseError) {
+                console.error("error: Cannot parse datetime:", parseError);
+            }
+
+
+
 
             cryptos.forEach(crypto => {
                 const coin = db.data.find(coin => coin.symbol === crypto);
@@ -98,15 +123,15 @@ function getPrices(cryptos) {
                 }
             });
 
+
+
             console.log("Szótár a kriptopénzek áraival:", dict);
             resolve(dict);  // Promise teljesítése a kész szótárral
         });
     });
 }
 
-function accumulate(prices, quantities) {
-    console.log("Árak:", prices);   // Ellenőrizd, hogy valóban objektumot kapsz
-    console.log("Mennyiségek:", quantities);
+function sumproduct(prices, quantities) {
     
     let total = 0.0;
 
