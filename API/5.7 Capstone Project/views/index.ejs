@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="../public/styles/main.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <title>Crypto Portfolio</title>
+    <script>
+        function updateButtons() {
+            const rows = document.querySelectorAll("#cryptoTable tbody tr");
+            rows.forEach((row, index) => {
+                const actionCell = row.querySelector("td:last-child");
+                actionCell.innerHTML = ""; // Töröljük az összes gombot
+
+                if (rows.length > 1) {
+                    const removeButton = document.createElement("button");
+                    removeButton.textContent = "-";
+                    removeButton.setAttribute("type", "button");
+                    removeButton.classList.add("btn", "btn-outline-danger", "me-1");
+                    removeButton.onclick = () => { removeRow(row); };
+                    actionCell.appendChild(removeButton);
+                }
+
+                if (index === rows.length - 1) {
+                    const addButton = document.createElement("button");
+                    addButton.textContent = "+";
+                    addButton.setAttribute("type", "button");
+                    addButton.classList.add("btn", "btn-outline-light");
+                    addButton.onclick = addCryptoRow;
+                    actionCell.appendChild(addButton);
+                }
+            });
+        }
+
+        function addCryptoRow() {
+            const table = document.getElementById("cryptoTable").getElementsByTagName("tbody")[0];
+
+            const row = document.createElement("tr");
+
+            const cellISO = document.createElement("td");
+            const inputISO = document.createElement("input");
+            inputISO.setAttribute("name", "ISO");
+            inputISO.setAttribute("type", "text");
+            inputISO.setAttribute("required", true);
+            inputISO.setAttribute("placeholder", "BTC");
+            inputISO.classList.add("form-control", "bg-dark", "text-light");
+            cellISO.appendChild(inputISO);
+
+            const cellQty = document.createElement("td");
+            const inputQty = document.createElement("input");
+            inputQty.setAttribute("type", "number");
+            inputQty.setAttribute("min", "0.0");
+            inputQty.setAttribute("required", true);
+            inputQty.classList.add("form-control", "bg-dark", "text-light");
+            cellQty.appendChild(inputQty);
+
+            const cellButton = document.createElement("td");
+            row.appendChild(cellISO);
+            row.appendChild(cellQty);
+            row.appendChild(cellButton);
+
+            table.appendChild(row);
+            updateButtons();
+        }
+
+        function removeRow(row) {
+            row.remove();
+            updateButtons();
+        }
+
+        function submitForm(event) {
+            event.preventDefault(); // Ne küldje el az alapértelmezett módon
+
+            const rows = document.querySelectorAll("#cryptoTable tbody tr");
+            const cryptoData = [];
+
+            rows.forEach(row => {
+                const iso = row.querySelector('input[name="ISO"]').value;
+                const qty = row.querySelector('input[type="number"]').value;
+                
+                if (iso && qty) { // Csak ha van érték
+                    cryptoData.push({ ISO: iso, Quantity: qty });
+                }
+            });
+
+            fetch('/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ portfolio: cryptoData })
+            })
+            .then(response => response.json())
+            .then(data => console.log("Szerver válasza:", data))
+            .catch(error => console.error("Hiba történt:", error));
+        }
+    </script>
+</head>
+<body class="d-flex justify-content-center align-items-center vh-100 bg-dark">
+    <div class="container">
+        <h1 class="text-center mb-4 text-light">Crypto Portfolio</h1>
+
+        <form id="cryptoForm" onsubmit="submitForm(event)">
+            <div class="table-responsive">
+                <table id="cryptoTable" class="table table-dark table-striped text-center">
+                    <thead>
+                        <tr>
+                            <th>ISO Code</th>
+                            <th>Quantity</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input name="ISO" type="text" required placeholder="BTC" class="form-control bg-dark text-light"></td>
+                            <td><input type="number" min="0.0" required class="form-control bg-dark text-light"></td>
+                            <td><button type="button" onclick="addCryptoRow()" class="btn btn-outline-light">+</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center">
+                <input type="submit" value="Calculate" class="btn btn-primary mt-3">
+            </div>
+        </form>
+        <h2 class="text-light"> <%= total %> </h2>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
