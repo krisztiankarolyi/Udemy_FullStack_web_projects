@@ -1,9 +1,8 @@
 
 import express from "express";
-import bodyParser from "body-parser";
 import axios from "axios";
 import fs from 'fs';
-
+import cookieParser from "cookie-parser";
 
 
 const app = express();
@@ -14,10 +13,13 @@ let API_URL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/late
 
 app.use(express.static("public"));
 app.use(express.json()); 
+app.use(cookieParser());
+
 
 app.get("/", function (req, res) {
     const total = req.query.total || 0;
-   res.render("index.ejs", {total: total});
+    let savedPortfolio = req.cookies.portfolio ? JSON.parse(req.cookies.portfolio) : {};
+    res.render("index.ejs", { total: total, savedPortfolio: savedPortfolio });
 });
 
 
@@ -33,6 +35,8 @@ app.post("/", async (req, res) => {
         let date = prices["timestamp"]
         let total = sumproduct(prices, quantities);
         delete prices["timestamp"]
+
+        res.cookie("portfolio", JSON.stringify(quantities), { maxAge: 24 * 60 * 60 * 90000, httpOnly: true });
 
         res.json({ total: total, date: date, prices: prices });
 
@@ -107,7 +111,6 @@ async function getPrices(cryptos) {
             } catch (parseError) {
                 console.error("error: Cannot parse datetime:", parseError);
             }
-
 
 
 
