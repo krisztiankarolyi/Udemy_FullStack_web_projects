@@ -1,164 +1,93 @@
-
 import express from "express";
 import axios from "axios";
-import fs from 'fs';
+import fs from "fs";
 import cookieParser from "cookie-parser";
-
+import { fileURLToPath } from "url";
+import path from "path";
 
 const app = express();
 const port = 3000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const apiKey = "7705819d-65da-4278-8a35-3f133ba0b762"; // Store this securely (e.g., env variables)
+const API_URL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest";
+const PROXY_URL = "https://cors-anywhere.herokuapp.com/";
 
-const apiKey = "7705819d-65da-4278-8a35-3f133ba0b762";
-let API_URL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
 
-app.use(express.static("public"));
-app.use(express.json()); 
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json());
 app.use(cookieParser());
 
-
-app.get("/", function (req, res) {
-    const total = req.query.total || 0;
-    let savedPortfolio = req.cookies.portfolio ? JSON.parse(req.cookies.portfolio) : {};
-    res.render("index.ejs", { total: total, savedPortfolio: savedPortfolio });
+// Home route
+app.get("/", (req, res) => {
+    const savedPortfolio = req.cookies.portfolio ? JSON.parse(req.cookies.portfolio) : {};
+    res.render("index.ejs", { saved_portfolio: savedPortfolio });
 });
 
-
+// Handle portfolio updates
 app.post("/", async (req, res) => {
     try {
-        const portfolioData = req.body;  
-       // console.log("Beérkező adatok:", portfolioData.portfolio);
-        const crypto_names = Object.keys(portfolioData.portfolio);
-        const quantities = portfolioData.portfolio;
+        const { portfolio } = req.body;
+        const cryptoSymbols = Object.keys(portfolio);
+        
+        const prices = await getPrices(cryptoSymbols);
+        const date = prices.timestamp;
+        delete prices.timestamp;
+        
+        const updatedPortfolio = mergePricesQuantities(prices, portfolio);
 
-        // Megvárjuk a getPrices Promise teljesítését
-        const prices = await getPrices(crypto_names); 
-        let date = prices["timestamp"]
-        let total = sumproduct(prices, quantities);
-        delete prices["timestamp"]
-
-        res.cookie("portfolio", JSON.stringify(quantities), { maxAge: 24 * 60 * 60 * 90000, httpOnly: true });
-
-        res.json({ total: total, date: date, prices: prices });
-
-
+        res.cookie("portfolio", JSON.stringify(updatedPortfolio), { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+        res.cookie("date", date, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+        res.json({ date, portfolio: updatedPortfolio });
     } catch (error) {
-        console.error("Hiba történt az API-hívás során:", error);
-        res.status(500).json({ error: "Hiba történt az adatok továbbításakor" });
+        console.error("Error processing portfolio:", error);
+        res.status(500).json({ error: "Error processing data" });
     }
 });
 
+app.listen(port, () => console.log(`Server running on port ${port}`));
 
-
-app.listen(port, () => {
-    console.log(`Server running on port: ${port}`);
-  });
-
-
-async function refreshStocks(){
+async function refreshCryptoData() {
     try {
-        const apiResponse = await axios.get(API_URL+"?limit=5000", {
-            headers: { "Content-Type": "application/json", "Accepts": "application/json",  "X-CMC_PRO_API_KEY": apiKey}
+        const { data } = await axios.get(`${API_URL}?limit=5000`, {
+            headers: { "X-CMC_PRO_API_KEY": apiKey }
         });
         
-        var stocks = JSON.stringify(apiResponse.data);
-
-        var filePath = './public/db.json';
-        
-        fs.writeFile(filePath, stocks, (err) => {
-            if (err) {
-              console.error('Hiba történt a fájl mentésekor:', err);
-            } else {
-              console.log('Árak sikeresen mentve a crypto_prices.txt fájlba!');
-            } 
-        });
+        fs.writeFileSync("./public/db.json", JSON.stringify(data), "utf8");
+        console.log("Crypto data updated successfully");
+    } catch (error) {
+        console.error("Error refreshing crypto data:", error);
     }
-
-    catch (error) {
-        console.error("Hiba történt az API-hívás során:", error);
-        res.status(500).json({ error: "Hiba történt az adatok továbbításakor" });
-    }
-
-
 }
 
-async function getPrices(cryptos) {
-    return new Promise((resolve, reject) => {
-        var filePath = './public/db.json';
-        var dict = {};
+async function getPrices(cryptoSymbols) {
+    const filePath = "./public/db.json";
+    const priceData = {};
 
-        fs.readFile(filePath, 'utf8', (err, data) => {
-            if (err) {
-                console.error('Hiba történt a fájl beolvasása közben:', err);
-                reject(err);  // Promise visszautasítása hibával
-                return;
-            }
+    try {
+        const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+        const timestamp = new Date(data.status.timestamp);
+        priceData.timestamp = timestamp;
 
-            const db = JSON.parse(data);
-            const timestamp = db.status.timestamp;
-            dict["timestamp"] = timestamp;
-
-            try {
-                const lastUpdate = new Date(timestamp);
-                const now = new Date();
-                const diffInHours = (now - lastUpdate) / (1000 * 60 * 60); 
-        
-                if (diffInHours > 2) {
-                    console.log("Data are outdated, updating...");
-                    refreshStocks();
-                } else {
-                    console.log("Data are still okay");
-                }
-            } catch (parseError) {
-                console.error("error: Cannot parse datetime:", parseError);
-            }
-
-
-
-            cryptos.forEach(crypto => {
-                const coin = db.data.find(coin => coin.symbol === crypto);
-                
-                if (coin) {
-                    const price = coin.quote.USD.price;
-                    dict[crypto] = price;
-                    console.log(crypto + ` USD ára: $${price}`);
-                } else {
-                    console.log(crypto + " nem található a fájlban.");
-                }
-            });
-
-
-
-            console.log("Szótár a kriptopénzek áraival:", dict);
-            resolve(dict);  // Promise teljesítése a kész szótárral
-        });
-    });
-}
-
-function sumproduct(prices, quantities) {
-    
-    let total = 0.0;
-
-    // Az árak objektum minden kulcsát végigiteráljuk
-    for (let key in prices) {
-        if (prices.hasOwnProperty(key) && quantities.hasOwnProperty(key)) {  // Csak akkor számoljunk, ha mindkét objektumban létezik az adott kulcs
-            let price = parseFloat(prices[key]);  // Próbálj meg konvertálni minden árat számra
-            let quantity = parseFloat(quantities[key]);  // Próbálj meg konvertálni minden mennyiséget számra
-
-            if (!isNaN(price) && !isNaN(quantity)) {  // Ha mindkét érték szám
-                total += price * quantity;  // Összeszorozzuk és hozzáadjuk az eredményhez
-            } else {
-                console.log(`Hibás adat: Ár: ${prices[key]}, Mennyiség: ${quantities[key]}`);
-            }
+        if ((new Date() - timestamp) / (1000 * 60 * 60) > 0) {
+            console.log("Data outdated, updating...");
+            await refreshCryptoData();
         }
-    }
 
-    return total;
+        cryptoSymbols.forEach(symbol => {
+            const coin = data.data.find(coin => coin.symbol === symbol);
+            if (coin) priceData[symbol] = coin.quote.USD.price;
+        });
+    } catch (error) {
+        console.error("Error reading crypto prices:", error);
+    }
+    
+    return priceData;
 }
 
-
-
-   /*     const apiResponse = await axios.get(API_URL+"?symbol="+currencies, {
-            headers: { "Content-Type": "application/json", "Accepts": "application/json",  "X-CMC_PRO_API_KEY": apiKey}
-        });*/
-        
-      //  refreshStocks();
+function mergePricesQuantities(prices, quantities) {
+    return Object.keys({ ...prices, ...quantities }).reduce((acc, key) => {
+        acc[key] = { price: prices[key] || null, quantity: quantities[key] || null };
+        return acc;
+    }, {});
+}

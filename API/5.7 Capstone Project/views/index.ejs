@@ -3,16 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="../public/styles/main.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <title>Crypto Portfolio</title>
-    <script>       
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (typeof saved_portfolio !== "undefined" && Object.keys(saved_portfolio).length > 0) {
+                Object.entries(saved_portfolio).forEach(([crypto, data]) => {
+                    addCryptoRow(crypto, data.quantity, data.price);
+                });
+                updateButtons();
+                calculateTotal(saved_portfolio);
+            }
+        });
+
         function updateButtons() {
             const rows = document.querySelectorAll("#cryptoTable tbody tr");
             rows.forEach((row, index) => {
-                const actionCell = row.querySelector("td:last-child");
-                actionCell.innerHTML = ""; // Töröljük az összes gombot
+                const actionCell = row.querySelector(".action-cell");
+                actionCell.innerHTML = "";
 
                 if (rows.length > 1) {
                     const removeButton = document.createElement("button");
@@ -22,45 +30,19 @@
                     removeButton.onclick = () => { removeRow(row); };
                     actionCell.appendChild(removeButton);
                 }
-
-                if (index === rows.length - 1) {
-                    const addButton = document.createElement("button");
-                    addButton.textContent = "+";
-                    addButton.setAttribute("type", "button");
-                    addButton.classList.add("btn", "btn-outline-light");
-                    addButton.onclick = addCryptoRow;
-                    actionCell.appendChild(addButton);
-                }
             });
         }
 
-        function addCryptoRow() {
+        function addCryptoRow(crypto = "", quantity = "", price = "?") {
             const table = document.getElementById("cryptoTable").getElementsByTagName("tbody")[0];
-
             const row = document.createElement("tr");
 
-            const cellISO = document.createElement("td");
-            const inputISO = document.createElement("input");
-            inputISO.setAttribute("name", "ISO");
-            inputISO.setAttribute("type", "text");
-            inputISO.setAttribute("required", true);
-            inputISO.setAttribute("placeholder", "BTC");
-            inputISO.classList.add("form-control", "bg-dark", "text-light");
-            cellISO.appendChild(inputISO);
-
-            const cellQty = document.createElement("td");
-            const inputQty = document.createElement("input");
-            inputQty.setAttribute("type", "number");
-            inputQty.setAttribute("min", "0.0");
-            inputQty.setAttribute("step", "0.0000001");
-            inputQty.setAttribute("required", true);
-            inputQty.classList.add("form-control", "bg-dark", "text-light");
-            cellQty.appendChild(inputQty);
-
-            const cellButton = document.createElement("td");
-            row.appendChild(cellISO);
-            row.appendChild(cellQty);
-            row.appendChild(cellButton);
+            row.innerHTML = `
+                <td><input name="ISO" type="text" required class="form-control bg-dark text-light" value="${crypto}"></td>
+                <td><input name="quantity" type="number" min="0.0" step="0.0000001" required class="form-control bg-dark text-light" value="${quantity}"></td>
+                <td class="action-cell"></td>
+                <td class="price-cell text-light">${isNaN(price) ? "? $" : parseFloat(price).toFixed(6) + " $"}</td>
+            `;
 
             table.appendChild(row);
             updateButtons();
@@ -72,16 +54,16 @@
         }
 
         function submitForm(event) {
-            event.preventDefault(); // Ne küldje el az alapértelmezett módon
+            event.preventDefault();
             const rows = document.querySelectorAll("#cryptoTable tbody tr");
             const cryptoData = {};
 
             rows.forEach(row => {
-                const iso = row.querySelector('input[name="ISO"]').value.trim();
-                const qty = row.querySelector('input[type="number"]').value.trim();
+                const iso = row.querySelector('input[name="ISO"]').value.trim().toUpperCase();
+                const qty = row.querySelector('input[name="quantity"]').value.trim();
                 
-                if (iso && qty) { // Csak ha van érték
-                    cryptoData[iso] = parseFloat(qty); // Győződjünk meg róla, hogy számként küldjük
+                if (iso && qty && !isNaN(qty) && qty > 0) {
+                    cryptoData[iso] = parseFloat(qty);
                 }
             });
 
@@ -90,81 +72,56 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ portfolio: cryptoData })
             })
-            .then(response => response.json()) // JSON formátumban olvassuk ki a választ
+            .then(response => response.json())
             .then(data => {
-                console.log(data);
-                document.getElementById("total").innerText = `Total wealth: $${data.total.toFixed(2)}`;
-                document.getElementById("timestamp").innerText = data.date;
-                document.getElementById("prices").innerText = JSON.stringify(data.prices);
+                calculateTotal(data.portfolio, data.date);
+                updatePrices(data.portfolio);
             })
             .catch(error => console.error("Hiba történt:", error));
         }
 
-        document.addEventListener("DOMContentLoaded", function () {
-    // Cookie beolvasása és objektummá alakítása
-    alert("reloading prevoius data");
-    const cookies = document.cookie.split("; ").reduce((acc, cookie) => {
-        const [name, value] = cookie.split("=");
-        acc[name] = decodeURIComponent(value);
-        return acc;
-    }, {});
+        function updatePrices(portfolio) {
+            const rows = document.querySelectorAll("#cryptoTable tbody tr");
 
-    if (cookies.portfolio) {
-        try {
-            const portfolioData = JSON.parse(cookies.portfolio);
-            const tableBody = document.querySelector("#cryptoTable tbody");
-            tableBody.innerHTML = ""; // Töröljük az alapértelmezett sort
+            rows.forEach(row => {
+                const iso = row.querySelector('input[name="ISO"]').value.trim().toUpperCase();
+                if (portfolio[iso]) {
+                    row.querySelector(".price-cell").textContent = parseFloat(portfolio[iso].price).toFixed(6) + " $";
+                }
+            });
+        }
 
-            Object.keys(portfolioData).forEach(crypto => {
-                const row = document.createElement("tr");
-
-                // ISO kód cella
-                const cellISO = document.createElement("td");
-                const inputISO = document.createElement("input");
-                inputISO.setAttribute("name", "ISO");
-                inputISO.setAttribute("type", "text");
-                inputISO.setAttribute("required", true);
-                inputISO.classList.add("form-control", "bg-dark", "text-light");
-                inputISO.value = crypto;
-                cellISO.appendChild(inputISO);
-
-                // Mennyiség cella
-                const cellQty = document.createElement("td");
-                const inputQty = document.createElement("input");
-                inputQty.setAttribute("type", "number");
-                inputQty.setAttribute("min", "0.0");
-                inputQty.setAttribute("step", "0.0000001");
-                inputQty.setAttribute("required", true);
-                inputQty.classList.add("form-control", "bg-dark", "text-light");
-                inputQty.value = portfolioData[crypto];
-                cellQty.appendChild(inputQty);
-
-                // Gombok cella
-                const cellButton = document.createElement("td");
-                row.appendChild(cellISO);
-                row.appendChild(cellQty);
-                row.appendChild(cellButton);
-
-                tableBody.appendChild(row);
+        function calculateTotal(portfolio, date = null) {
+            let total = 0.0;
+            Object.values(portfolio).forEach(asset => {
+                total += asset.price * asset.quantity;
             });
 
-            updateButtons(); // Frissítjük a gombokat
-        } catch (error) {
-            console.error("Hiba történt a cookie feldolgozásakor:", error);
+            if (date) {
+                document.getElementById("timestamp").innerText = convertDateTime(date);
+            }
+
+            document.getElementById("total").innerText = `Total wealth: $${total.toFixed(6)}`;
         }
-    }
-    else{
-        alert("cookie was not found");
-    }
-});
 
-
+        function convertDateTime(date) {
+            return new Date(date).toLocaleString('hu-HU', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+        }
     </script>
 </head>
 <body class="d-flex justify-content-center align-items-center vh-100 bg-dark">
     <div class="container">
         <h1 class="text-center mb-4 text-light">Crypto Portfolio</h1>
-
+        <script>
+            var saved_portfolio = <%- JSON.stringify(saved_portfolio) %> || {};
+        </script>
         <form id="cryptoForm" onsubmit="submitForm(event)">
             <div class="table-responsive">
                 <table id="cryptoTable" class="table table-dark table-striped text-center">
@@ -172,27 +129,29 @@
                         <tr>
                             <th>ISO Code</th>
                             <th>Quantity</th>
-                            <th></th>
+                            <th>Delete</th>
+                            <th>Unit price</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><input name="ISO" type="text" required placeholder="BTC" class="form-control bg-dark text-light"></td>
-                            <td><input type="number" step="0.000000001" min="0.0" required class="form-control bg-dark text-light"></td>
-                            <td><button type="button" onclick="addCryptoRow()" class="btn btn-outline-light">+</button></td>
+                            <td><input name="ISO" type="text" required class="form-control bg-dark text-light"></td>
+                            <td><input name="quantity" type="number" step="0.000000001" min="0.0" required class="form-control bg-dark text-light"></td>
+                            <td class="action-cell"></td>
+                            <td class="price-cell text-light">? $</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             <div class="text-center">
+                <button type="button" onclick="addCryptoRow('','')" class="btn btn-outline-light">+</button>
                 <input type="submit" value="Calculate" class="btn btn-primary mt-3">
+                <hr>
             </div>
         </form>
         <h2 class="text-light" id="total"> Total: 0.0$ </h2>
-        <p class="text-light" >database last updated from cryptomarketcap.com: <span id="timestamp"> </span></p>
-        <p  class="text-light"  id="prices"></p>
+        <p class="text-light">Database last updated: <span id="timestamp"></span></p>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
