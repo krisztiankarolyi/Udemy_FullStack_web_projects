@@ -1,0 +1,45 @@
+<html>
+    <head>
+        <style>
+            p{
+
+                margin-left: 20%;
+                color: white;
+                font-family:Verdana, Geneva, Tahoma, sans-serif
+            }
+            body{
+                background-color: #333;
+                padding: 50px 0;
+            }
+        </style>
+    </head>
+    <body>
+        
+
+        <script>
+                        
+            let count = 99;
+
+            while (count > 0) {
+                appendToBody(`${count} bottle${count > 1 ? 's' : ''} of beer on the wall, ${count} bottle${count > 1 ? 's' : ''} of beer.`);
+                count--;
+                if (count > 0) {
+                    appendToBody(`Take one down and pass it around, ${count} bottle${count > 1 ? 's' : ''} of beer on the wall.`);
+                } else {
+                    appendToBody("Take one down and pass it around, no more bottles of beer on the wall.");
+                }
+                
+            }
+
+            appendToBody("No more bottles of beer on the wall, no more bottles of beer.");
+            appendToBody("Go to the store and buy some more, 99 bottles of beer on the wall.");
+
+            function appendToBody(text) {
+                const p = document.createElement("p");
+                p.textContent = text;
+                document.body.appendChild(p);               
+            }
+
+        </script>
+    </body>
+</html>

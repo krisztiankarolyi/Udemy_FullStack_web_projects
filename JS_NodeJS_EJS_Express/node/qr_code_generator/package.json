@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "express": "^4.19.2",
+    "from": "^0.1.7",
+    "fs": "^0.0.1-security",
+    "import": "^0.0.6",
+    "inquirer": "^9.3.6",
+    "path": "^0.12.7",
+    "qr-image": "^3.2.0"
+  },
+  "name": "2.4-qr-code-project",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kiki",
+  "license": "ISC",
+  "description": ""
+}
