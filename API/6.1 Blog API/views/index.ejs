@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <style>
+    body {
+      background-color: #333;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: justify;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    #newPostBtn {
+      display: block;
+      text-align: center;
+      background-color: #007bff;
+      color: white;
+      padding: 10px;
+      text-decoration: none;
+      margin-bottom: 20px;
+      border-radius: 5px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      color: black;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .post-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .post-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+
+    .meta {
+      font-size: 0.9em;
+      color: #bbb;
+    }
+
+    .edit, .delete {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 5px 10px;
+      text-decoration: none;
+      color: white;
+      border-radius: 5px;
+    }
+
+    .edit {
+      background-color: #28a745;
+    }
+
+    .delete {
+      background-color: #dc3545;
+    }
+
+    @media (min-width: 600px) {
+      .post-content {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .post-content img {
+        max-width: 40%;
+        margin-right: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>My Blog</h1>
+    <a id="newPostBtn" href="/new">New Post</a>
+    <ul id="postsList">
+      <% posts.forEach(post => { %>
+        <li>
+          <h2><%= post.title %></h2>
+          <small class="meta"><%= post.date %></small>
+          <div class="post-content">
+            <img src="<%= post.img_url %>" draggable="false">
+            <p><%= post.content %></p>
+          </div>
+          <small class="meta">By: <%= post.author %></small>
+          <a class="edit" href="/edit/<%= post.id %>">Edit</a>
+          <a class="delete" href="/api/posts/delete/<%= post.id %>">Delete</a>
+        </li>
+      <% }); %>
+    </ul>
+  </div>
+</body>
+
+</html>
