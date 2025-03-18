@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 const app = express();
 const port = 3000;
-export const API_URL = "udemy-fullstack-web-projects-wkmw.onrender.com";
+export const API_URL = "https://udemy-fullstack-web-projects-wkmw.onrender.com";
 app.set('trust proxy', true);
 
 app.use(express.static("public"));
