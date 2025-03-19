@@ -1,92 +1,112 @@
 import express from "express";
 import bodyParser from "body-parser";
-import fs from "fs";
+import { MongoClient, ServerApiVersion } from "mongodb";
+import dotenv from "dotenv";
 
+dotenv.config();
 const app = express();
 const port = 4000;
-const POSTS_FILE = "posts.json";
-const ARCHIVE_FILE = "archive.json";
+const uri = process.env.MONGODB_URI;
 
-app.set('trust proxy', true);
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+
+async function connectMongo() {
+  try {
+    await client.connect();
+    console.log("✅ Successfully connected to MongoDB!");
+  } catch (error) {
+    console.error("❌ MongoDB connection error:", error);
+  }
+}
+
+connectMongo();
+const db = client.db("blog");
+const postsCollection = db.collection("posts");
+const archiveCollection = db.collection("archive");
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Helper function to read and write posts
-const readPosts = () => {
-    if (!fs.existsSync(POSTS_FILE)) return [];
-    return JSON.parse(fs.readFileSync(POSTS_FILE, "utf8"));
-};
-
-const writePosts = (data) => {
-    fs.writeFileSync(POSTS_FILE, JSON.stringify(data, null, 2));
-};
-
-const archivePost = (post) => {
-    let archive = [];
-    if (fs.existsSync(ARCHIVE_FILE)) {
-        archive = JSON.parse(fs.readFileSync(ARCHIVE_FILE, "utf8"));
-    }
-    archive.push(post);
-    fs.writeFileSync(ARCHIVE_FILE, JSON.stringify(archive, null, 2));
-};
-
-let posts = readPosts();
-let lastId = posts.length > 0 ? Math.max(...posts.map(p => p.id)) : 0;
-
 // GET all posts
-app.get("/posts", (req, res) => {
-    console.log("Posts requested by " + req.ip);
+app.get("/posts", async (req, res) => {
+  try {
+    const posts = await postsCollection.find().toArray();
     res.json(posts);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching posts" });
+  }
 });
 
 // GET a specific post by ID
-app.get("/posts/:id", (req, res) => {
-    const post = posts.find(p => p.id === parseInt(req.params.id));
+app.get("/posts/:id", async (req, res) => {
+  try {
+    const post = await postsCollection.findOne({ id: parseInt(req.params.id) });
     if (!post) return res.status(404).json({ message: "Post not found" });
     res.json(post);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching post" });
+  }
 });
 
 // POST a new post
-app.post("/posts", (req, res) => {
+app.post("/posts", async (req, res) => {
+  try {
+    const lastPost = await postsCollection.find().sort({ id: -1 }).limit(1).toArray();
+    const lastId = lastPost.length > 0 ? lastPost[0].id : 0;
+
     const post = {
-        id: ++lastId,
-        title: req.body.title,
-        author: req.body.author,
-        content: req.body.content,
-        img_url: req.body.img_url,
-        date: new Date().toISOString()
+      id: lastId + 1,
+      title: req.body.title,
+      author: req.body.author,
+      content: req.body.content,
+      img_url: req.body.img_url,
+      date: new Date().toISOString()
     };
-    posts.push(post);
-    writePosts(posts);
+    
+    await postsCollection.insertOne(post);
     res.status(201).json(post);
+  } catch (error) {
+    res.status(500).json({ message: "Error creating post" });
+  }
 });
 
 // PATCH update a post
-app.patch("/posts/:id", (req, res) => {
-    const post = posts.find(p => p.id === parseInt(req.params.id));
-    if (!post) return res.status(404).json({ message: "Post not found" });
+app.patch("/posts/:id", async (req, res) => {
+  try {
+    const updatedPost = await postsCollection.findOneAndUpdate(
+      { id: parseInt(req.params.id) },
+      { $set: req.body },
+      { returnDocument: "after" }
+    );
 
-    if (req.body.title) post.title = req.body.title;
-    if (req.body.content) post.content = req.body.content;
-    if (req.body.author) post.author = req.body.author;
-    if (req.body.img_url) post.img_url = req.body.img_url;
-
-    writePosts(posts);
-    res.json(post);
+    if (!updatedPost.value) return res.status(404).json({ message: "Post not found" });
+    res.json(updatedPost.value);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating post" });
+  }
 });
 
-// DELETE a post
-app.delete("/posts/:id", (req, res) => {
-    const index = posts.findIndex(p => p.id === parseInt(req.params.id));
-    if (index === -1) return res.status(404).json({ message: "Post not found" });
-    
-    const [deletedPost] = posts.splice(index, 1);
-    archivePost(deletedPost);
-    writePosts(posts);
+// DELETE a post (and archive it)
+app.delete("/posts/:id", async (req, res) => {
+  try {
+    const post = await postsCollection.findOne({ id: parseInt(req.params.id) });
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    await archiveCollection.insertOne(post); // Archiválás
+    await postsCollection.deleteOne({ id: parseInt(req.params.id) }); // Törlés
     
     res.json({ message: "Post archived and deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting post" });
+  }
 });
 
 app.listen(port, () => {
-    console.log(`API running at http://localhost:${port}`);
+  console.log(`🚀 API running at http://localhost:${port}`);
 });
