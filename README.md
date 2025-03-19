@@ -1,6 +1,11 @@
 # Udemy_FullStack_web_projects
 I upload here my mini projects made during the Udemy FullStack web developer course.  (https://www.udemy.com/share/101qYw3@ty8g8At8Q5JU-5ULxocoRHTyeBr0-vYcbJVXwMipfQuX2xtVHhB4pOISxbbKSqSu/)
 
+Node Blog project (MongoDB, RestAPI)
+https://blog-server-im8o.onrender.com/
+![image](https://github.com/user-attachments/assets/d64fb4cd-dbd6-4458-8594-f5eadf3bcece)
+
+
  Crypto portfolio mini project: 
 https://cryptoportfolio.onrender.com/
 ![image](https://github.com/user-attachments/assets/2d4582da-166e-4ad4-8911-abd8ab76177c)
