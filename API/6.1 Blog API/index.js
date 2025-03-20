@@ -90,7 +90,7 @@ app.post("/posts", async (req, res) => {
 app.patch("/posts/:id", async (req, res) => {
   try {
     const updatedPost = await postsCollection.findOneAndUpdate(
-      { _id: new ObjectId(req.params.id) }, // MongoDB saját ObjectId azonosítója
+      { id: parseInt(req.params.id) }, // Eredeti `id` mező alapján keresünk, nem `_id`
       { $set: req.body },
       { returnDocument: "after" }
    );
