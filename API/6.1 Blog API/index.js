@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import { MongoClient, ServerApiVersion } from "mongodb";
+import { ObjectId } from "mongodb"; 
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -89,15 +90,17 @@ app.post("/posts", async (req, res) => {
 app.patch("/posts/:id", async (req, res) => {
   try {
     const updatedPost = await postsCollection.findOneAndUpdate(
-      { id: parseInt(req.params.id) },
+      { _id: new ObjectId(req.params.id) }, // MongoDB saját ObjectId azonosítója
       { $set: req.body },
       { returnDocument: "after" }
-    );
+   );
 
-    if (!updatedPost.value) {
+   console.log("findOneAndUpdate result:", updatedPost);
+
+   if (!updatedPost.value) {
       console.warn(`Post (ID: ${req.params.id}) not found for update.`);
       return res.status(404).json({ message: "Post not found" });
-    }
+   }
     console.log(`Post (ID: ${req.params.id}) has been updated successfully.`);
     console.log(updatedPost.value);
     res.json(updatedPost.value);
