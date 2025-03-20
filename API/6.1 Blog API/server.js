@@ -10,7 +10,6 @@ export const API_URL = "https://udemy-fullstack-web-projects-wkmw.onrender.com";
 app.set('trust proxy', true);
 
 app.use(express.static("public"));
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -18,11 +17,10 @@ app.use(bodyParser.json());
 app.get("/", async (req, res) => {
   try {
     const response = await axios.get(`${API_URL}/posts`);
-    console.log(response);
+    console.log("Posts have been requested by " + req.ip);
     res.render("index.ejs", { posts: response.data });
-    console.log("Posts have been requested by "+req.ip);
-
   } catch (error) {
+    console.error("Error fetching posts. Info:", error.message);
     res.status(500).json({ message: "Error fetching posts" });
   }
 });
@@ -35,13 +33,14 @@ app.get("/new", (req, res) => {
 app.get("/edit/:id", async (req, res) => {
   try {
     const response = await axios.get(`${API_URL}/posts/${req.params.id}`);
-    console.log(response.data);
+    console.log(`Post (ID: ${req.params.id}) fetched successfully.`);
     res.render("modify.ejs", {
       heading: "Edit Post",
       submit: "Update Post",
       post: response.data,
     });
   } catch (error) {
+    console.error(`Error fetching post (ID: ${req.params.id}). Info:`, error.message);
     res.status(500).json({ message: "Error fetching post" });
   }
 });
@@ -50,25 +49,23 @@ app.get("/edit/:id", async (req, res) => {
 app.post("/api/posts", async (req, res) => {
   try {
     const response = await axios.post(`${API_URL}/posts`, req.body);
-    console.log(response.data);
+    console.log(`Post (ID: ${response.data.id}) was created successfully.`);
     res.redirect("/");
   } catch (error) {
+    console.error("Error creating post. Info:", error.message);
     res.status(500).json({ message: "Error creating post" });
   }
 });
 
 // Partially update a post
 app.post("/api/posts/:id", async (req, res) => {
-  console.log("called");
   try {
-    const response = await axios.patch(
-      `${API_URL}/posts/${req.params.id}`,
-      req.body
-    );
-    console.log(response.data);
+    const response = await axios.patch(`${API_URL}/posts/${req.params.id}`, req.body);
+    console.log(`Post (ID: ${req.params.id}) was updated successfully.`);
     res.redirect("/");
   } catch (error) {
-    res.status(500).json({ message: "Error updating post" });
+    console.error(`Error occurred while updating post (ID: ${req.params.id}). Info:`, error.message);
+    res.status(500).json({ message: "Error updating post", more: error.message });
   }
 });
 
@@ -76,8 +73,10 @@ app.post("/api/posts/:id", async (req, res) => {
 app.get("/api/posts/delete/:id", async (req, res) => {
   try {
     await axios.delete(`${API_URL}/posts/${req.params.id}`);
+    console.log(`Post (ID: ${req.params.id}) was deleted successfully.`);
     res.redirect("/");
   } catch (error) {
+    console.error(`Error occurred while deleting post (ID: ${req.params.id}). Info:`, error.message);
     res.status(500).json({ message: "Error deleting post" });
   }
 });

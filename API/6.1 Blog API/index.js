@@ -37,8 +37,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.get("/posts", async (req, res) => {
   try {
     const posts = await postsCollection.find().toArray();
+    console.log("Fetched all posts successfully.");
     res.json(posts);
   } catch (error) {
+    console.error("Error fetching posts:", error.message);
     res.status(500).json({ message: "Error fetching posts" });
   }
 });
@@ -47,9 +49,14 @@ app.get("/posts", async (req, res) => {
 app.get("/posts/:id", async (req, res) => {
   try {
     const post = await postsCollection.findOne({ id: parseInt(req.params.id) });
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    if (!post) {
+      console.warn(`Post (ID: ${req.params.id}) not found.`);
+      return res.status(404).json({ message: "Post not found" });
+    }
+    console.log(`Fetched post (ID: ${req.params.id}) successfully.`);
     res.json(post);
   } catch (error) {
+    console.error(`Error fetching post (ID: ${req.params.id}):`, error.message);
     res.status(500).json({ message: "Error fetching post" });
   }
 });
@@ -70,8 +77,10 @@ app.post("/posts", async (req, res) => {
     };
     
     await postsCollection.insertOne(post);
+    console.log(`Post (ID: ${post.id}) was created successfully.`);
     res.status(201).json(post);
   } catch (error) {
+    console.error("Error creating post:", error.message);
     res.status(500).json({ message: "Error creating post" });
   }
 });
@@ -85,9 +94,15 @@ app.patch("/posts/:id", async (req, res) => {
       { returnDocument: "after" }
     );
 
-    if (!updatedPost.value) return res.status(404).json({ message: "Post not found" });
+    if (!updatedPost.value) {
+      console.warn(`Post (ID: ${req.params.id}) not found for update.`);
+      return res.status(404).json({ message: "Post not found" });
+    }
+    console.log(`Post (ID: ${req.params.id}) has been updated successfully.`);
+    console.log(updatedPost.value);
     res.json(updatedPost.value);
   } catch (error) {
+    console.error(`Error updating post (ID: ${req.params.id}):`, error.message);
     res.status(500).json({ message: "Error updating post" });
   }
 });
@@ -96,13 +111,18 @@ app.patch("/posts/:id", async (req, res) => {
 app.delete("/posts/:id", async (req, res) => {
   try {
     const post = await postsCollection.findOne({ id: parseInt(req.params.id) });
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    if (!post) {
+      console.warn(`Post (ID: ${req.params.id}) not found for deletion.`);
+      return res.status(404).json({ message: "Post not found" });
+    }
 
     await archiveCollection.insertOne(post); // Archiválás
     await postsCollection.deleteOne({ id: parseInt(req.params.id) }); // Törlés
     
+    console.log(`Post (ID: ${req.params.id}) was archived and deleted successfully.`);
     res.json({ message: "Post archived and deleted" });
   } catch (error) {
+    console.error(`Error deleting post (ID: ${req.params.id}):`, error.message);
     res.status(500).json({ message: "Error deleting post" });
   }
 });
