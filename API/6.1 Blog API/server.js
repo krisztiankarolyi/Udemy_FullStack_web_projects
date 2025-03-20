@@ -66,7 +66,8 @@ app.post("/api/posts/:id", async (req, res) => {
     res.redirect("/");
   } catch (error) {
     console.error(`Error occurred while updating post (ID: ${req.params.id}). Info:`, error.message);
-    res.status(500).json({ message: "Error updating post", more: error.message });
+    //res.status(500).json({ message: "Error updating post", more: error.message });
+    res.redirect("/");
   }
 });
 
