@@ -92,7 +92,7 @@ app.patch("/posts/:id", async (req, res) => {
     const updatedPost = await postsCollection.findOneAndUpdate(
       { id: parseInt(req.params.id) }, // Eredeti `id` mező alapján keresünk, nem `_id`
       { $set: req.body },
-      { returnDocument: "after" }
+      { returnDocument: "before" }
    );
 
    console.log("findOneAndUpdate result:", updatedPost);

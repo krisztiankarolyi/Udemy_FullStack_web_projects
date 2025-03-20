@@ -41,7 +41,8 @@ app.get("/edit/:id", async (req, res) => {
     });
   } catch (error) {
     console.error(`Error fetching post (ID: ${req.params.id}). Info:`, error.message);
-    res.status(500).json({ message: "Error fetching post" });
+   // res.status(500).json({ message: "Error fetching post" });
+   res.redirect("/");
   }
 });
 
