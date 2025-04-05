@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flag Quiz</title>
+  <link rel="stylesheet" href="/styles/main.css">
+</head>
+
+<%
+// Visszaalakítás zászló emojiból országkóddá (pl. 🇪🇨 → EC)
+function flagToCountryCode(flag) {
+  if (!flag || flag.length < 2) return '';
+  return [...flag]
+    .map(c => String.fromCharCode(c.codePointAt(0) - 0x1F1E6 + 65))
+    .join('');
+}
+const countryCode = flagToCountryCode(question.flag);
+%>
+
+<body id="app">
+  <form class="container" action="/submit" method="post">
+    <div class="horizontal-container">
+      <h3>
+        Total Score:
+        <span id="score">
+          <%= locals.totalScore ? totalScore : "0" %>
+        </span>
+      </h3>
+
+    </div>
+
+    <h1 id="countryFlag">
+      <%= question.flag %>
+      <img src="https://flagsapi.com/<%= countryCode %>/flat/64.png" alt="Flag of <%= countryCode %>">
+    </h1>
+    
+
+    </h1>
+    <div class="answer-container">
+      <input type="text" name="answer" id="userInput" placeholder="Name the country" autofocus autocomplete="off">
+
+    </div>
+    <button type="submit">SUBMIT<% if(locals.wasCorrect){ %>
+        <span class="checkmark">✔</span>
+        <% } else if (locals.wasCorrect===false) { %>
+          <span class="cross" id="error">✖</span>
+          <% } %>
+    </button>
+
+  </form>
+
+
+
+  <script>
+    var wasCorrect = "<%= locals.wasCorrect %>";
+    console.log(wasCorrect)
+    if (wasCorrect === "false") {
+      alert('Game over! Final best score: <%= locals.totalScore %>');
+      document.getElementById("app").innerHTML = '<a href="/" class="restart-button">Restart</a>'
+    }
+ű
+
+  </script>
+</body>
+
+</html>
