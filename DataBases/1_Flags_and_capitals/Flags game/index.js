@@ -1,23 +1,19 @@
 import express from "express";
-import bodyParser from "body-parser";
 import pg from "pg";
+import bodyParser from "body-parser";
 import dotenv from "dotenv";
 
-dotenv.config(); // .env betöltése
+dotenv.config(); // Betölti a .env fájl tartalmát a process.env-be
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.set("view engine", "ejs"); // ha .ejs fájlokat használsz
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static("public"));
-
-let quiz = [];
-let dbIsAlive = false; // ez jelzi, hogy sikerült-e csatlakozni
 let totalCorrect = 0;
-let currentQuestion = {};
+let quiz = [];
 
-// PostgreSQL kapcsolat
+console.log(process.env);
+
+// PostgreSQL kapcsolat környezeti változókból
 const db = new pg.Client({
   user: process.env.PGUSER,
   host: process.env.PGHOST,
@@ -25,6 +21,12 @@ const db = new pg.Client({
   password: process.env.PGPASSWORD,
   port: process.env.PGPORT,
 });
+
+// Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static("public"));
+
+let dbIsAlive = false;
 
 db.connect((err) => {
   if (err) {
@@ -47,7 +49,8 @@ db.connect((err) => {
   }
 });
 
-// Kezdőlap
+let currentQuestion = {};
+
 app.get("/", async (req, res) => {
   totalCorrect = 0;
 
@@ -61,19 +64,19 @@ app.get("/", async (req, res) => {
   res.render("index.ejs", { question: currentQuestion });
 });
 
-// Válasz beküldése
+// POST a new post
 app.post("/submit", (req, res) => {
-  if (!dbIsAlive) {
-    return res.status(500).render("error.ejs", {
-      message: "Nincs adatbázis kapcsolat, nem lehet válaszolni.",
-    });
-  }
-
+if(!dbIsAlive){
+  return res.status(500).render("error.ejs", {
+    message: "Nem sikerült csatlakozni az adatbázishoz. Kérlek, próbáld újra később.",
+  });
+}
+else{
   let answer = req.body.answer.trim();
   let isCorrect = false;
-
-  if (currentQuestion.capital.toLowerCase() === answer.toLowerCase()) {
+  if (currentQuestion.country.toLowerCase() === answer.toLowerCase()) {
     totalCorrect++;
+    console.log(totalCorrect);
     isCorrect = true;
   }
 
@@ -83,14 +86,16 @@ app.post("/submit", (req, res) => {
     wasCorrect: isCorrect,
     totalScore: totalCorrect,
   });
+}
+
+
 });
 
-// Véletlenszerű kérdés választása
-async function nextQuestion() {
+function nextQuestion() {
   const randomCountry = quiz[Math.floor(Math.random() * quiz.length)];
   currentQuestion = randomCountry;
 }
 
 app.listen(port, () => {
-  console.log(`🚀 Server is running at http://localhost:${port}`);
+  console.log(`Server is running at http://localhost:${port}`);
 });
