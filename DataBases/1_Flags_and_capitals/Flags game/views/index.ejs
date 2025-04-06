@@ -2,14 +2,122 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flag Quiz</title>
-  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/main.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    form.container {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2rem;
+      border-radius: 1rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .horizontal-container {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .horizontal-container h3 {
+      font-size: 1.2rem;
+    }
+
+    img {
+      margin: 1rem 0;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+
+    .answer-container {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1rem;
+      border-radius: 0.5rem;
+      border: none;
+      outline: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    button {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      font-weight: bold;
+      background-color: #00b894;
+      border: none;
+      border-radius: 0.5rem;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button:hover {
+      background-color: #019875;
+    }
+
+    .checkmark {
+      color: #2ecc71;
+    }
+
+    .cross {
+      color: #e74c3c;
+    }
+
+    .restart-button {
+      display: inline-block;
+      padding: 1rem 2rem;
+      background-color: #e74c3c;
+      color: white;
+      text-decoration: none;
+      border-radius: 0.5rem;
+      font-weight: bold;
+      margin-top: 2rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .restart-button:hover {
+      background-color: #c0392b;
+    }
+
+    @media (max-width: 500px) {
+      form.container {
+        padding: 1.5rem;
+      }
+
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
 </head>
 
 <%
-// Visszaalakítás zászló emojiból országkóddá (pl. 🇪🇨 → EC)
 function flagToCountryCode(flag) {
   if (!flag || flag.length < 2) return '';
   return [...flag]
@@ -22,44 +130,31 @@ const countryCode = flagToCountryCode(question.flag);
 <body id="app">
   <form class="container" action="/submit" method="post">
     <div class="horizontal-container">
-      <h3>
-        Total Score:
-        <span id="score">
-          <%= locals.totalScore ? totalScore : "0" %>
-        </span>
-      </h3>
-
+      <h3>Total Score: <span id="score"><%= locals.totalScore ? totalScore : "0" %></span></h3>
     </div>
 
- <img src="https://flagsapi.com/<%= countryCode %>/flat/64.png" alt="Flag of <%= countryCode %>">
-     
+    <img src="https://flagsapi.com/<%= countryCode %>/flat/64.png" alt="Flag of <%= countryCode %>">
 
-
-    </h1>
     <div class="answer-container">
       <input type="text" name="answer" id="userInput" placeholder="Name the country" autofocus autocomplete="off">
-
     </div>
-    <button type="submit">SUBMIT<% if(locals.wasCorrect){ %>
+
+    <button type="submit">
+      SUBMIT
+      <% if(locals.wasCorrect){ %>
         <span class="checkmark">✔</span>
-        <% } else if (locals.wasCorrect===false) { %>
-          <span class="cross" id="error">✖</span>
-          <% } %>
+      <% } else if (locals.wasCorrect === false) { %>
+        <span class="cross" id="error">✖</span>
+      <% } %>
     </button>
-
   </form>
-
-
 
   <script>
     var wasCorrect = "<%= locals.wasCorrect %>";
-    console.log(wasCorrect)
     if (wasCorrect === "false") {
       alert('Game over! Final best score: <%= locals.totalScore %>');
-      document.getElementById("app").innerHTML = '<a href="/" class="restart-button">Restart</a>'
+      document.getElementById("app").innerHTML = '<a href="/" class="restart-button">Restart</a>';
     }
-ű
-
   </script>
 </body>
 
