@@ -89,6 +89,8 @@ app.post("/submit", (req, res) => {
 async function nextQuestion() {
   const randomCountry = quiz[Math.floor(Math.random() * quiz.length)];
   currentQuestion = randomCountry;
+  console.log("current question:");
+  console.table(currentQuestion);
 }
 
 app.listen(port, () => {

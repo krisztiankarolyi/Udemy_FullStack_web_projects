@@ -36,7 +36,7 @@ db.connect((err) => {
     console.log("✅ Sikeres adatbázis kapcsolat!");
     dbIsAlive = true;
 
-    db.query("SELECT * FROM capitals WHERE capital IS NOT NULL", (err, res) => {
+    db.query("SELECT * FROM flags", (err, res) => {
       if (err) {
         console.error("❌ Hiba a lekérdezés során:", err.stack);
         dbIsAlive = false;
@@ -94,6 +94,8 @@ else{
 function nextQuestion() {
   const randomCountry = quiz[Math.floor(Math.random() * quiz.length)];
   currentQuestion = randomCountry;
+  console.log("current question:");
+  console.table(currentQuestion);
 }
 
 app.listen(port, () => {
