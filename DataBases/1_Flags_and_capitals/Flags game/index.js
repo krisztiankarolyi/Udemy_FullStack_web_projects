@@ -3,6 +3,8 @@ import pg from "pg";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 
+
+
 dotenv.config(); // Betölti a .env fájl tartalmát a process.env-be
 
 const app = express();
