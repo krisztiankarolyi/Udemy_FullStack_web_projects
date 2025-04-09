@@ -163,3 +163,12 @@ body {
   margin: 0 auto;
 }
 
+.ag-canvas {
+  overflow: auto;
+  touch-action: pinch-zoom; /* engedélyezi csak itt a pinch-zoomot */
+  -ms-touch-action: pinch-zoom;
+  -webkit-overflow-scrolling: touch; /* sima scroll mobilon */
+  background-color: transparent;
+  position: relative;
+}
+
