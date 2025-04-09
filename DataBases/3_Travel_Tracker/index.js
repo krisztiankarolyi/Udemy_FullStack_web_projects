@@ -13,12 +13,16 @@ const port = 3000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+app.set('trust proxy', true)
 
 app.use(session({
   secret: process.env.SESSION_KEY, 
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: process.env.HTTPS === "true" }
+  cookie: { 
+    secure: process.env.HTTPS === "true",
+    sameSite: 'lax'
+  }
 }));
 
 
