@@ -63,6 +63,43 @@ body {
   background-color: #b02a37;
 }
 
+.visited-select-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #222;
+  padding: 5px 10px;
+  border-radius: 8px;
+  z-index: 100;
+  color: white;
+}
+
+/* Mobil nézet: alul középen */
+@media (max-width: 768px) {
+  html{
+    max-height: 100%;
+    overflow: hidden;
+  }
+
+  .visited-select-container {
+    top: auto;
+    bottom: 10px;
+    right: 50%;
+    transform: translateX(50%);
+  }
+
+  .ag-canvas {
+    display: flex;             /* Flexbox elrendezés */
+    justify-content: center;   /* Vízszintes középre igazítás */
+    align-items: center;       /* Függőleges középre igazítás */
+    height: calc(100vh - 120px); /* Állítsd be az elérhető magasságot, figyelembe véve a fejléc/stb. méretét */
+  }
+
+  .form-row {
+    max-width: 600px;
+  }
+}
+
 
 .ag-canvas {
   display: -webkit-flex;

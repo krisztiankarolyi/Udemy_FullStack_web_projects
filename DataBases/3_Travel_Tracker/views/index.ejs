@@ -11,10 +11,29 @@
 <body>
   <% if (typeof username !== "undefined") { %>
     <p class="msg">Welcome, <%= username %>! <a href="/logout">logout</a></p>
-<% } %>
+  <% } %>
+
+  <div class="visited-select-container">
+    <form method="POST" action="/unvisit">
+      <label for="visitedSelect">Visited Countries:</label>
+      <select id="visitedSelect" name="visited_country" class="input-box">
+        <% visited_countries.forEach(function(country) { %>
+          <option value="<%= country %>"><%= country %></option>
+        <% }); %>
+      </select>
+      <button type="submit" class="reset-btn">Remove from list</button>
+    </form>
+  </div>
+  
+  
+
   <div class="form-row">
     <form action="/add" method="post" class="form-inline">
-      <input type="text" name="country" autofocus placeholder="<%= locals.error ? error : 'Enter country name' %>" class="input-box">
+      <select name="country" autofocus class="input-box" required>
+        <% county_list.forEach(function(country) { %>
+          <option><%= country %></option>
+        <% }); %>
+      </select>
       <button type="submit" class="add-btn">Add</button>
     </form>
   

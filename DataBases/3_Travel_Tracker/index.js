@@ -54,10 +54,15 @@ async function refreshData(username) {
 
 app.get("/", isAuthenticated, async (req, res) => {
   await refreshData(req.session.user.username);
+  let county_list = await getCountryList(req.session.user.username);
+  let visited_county_list = await getVisitedCountries(req.session.user.username);
+
   res.render("index.ejs", {
     countries: visited_countries,
     total: total,
-    username: req.session.user.username
+    username: req.session.user.username.HTTP,
+    county_list: county_list,
+    visited_countries: visited_county_list
   });
 });
 
@@ -200,6 +205,29 @@ app.get("/logout", (req, res) => {
   });
 });
 
+app.post("/unvisit", isAuthenticated, async (req, res) => {
+  if(req.body.visited_country == undefined || req.body.visited_country == "" || req.body.visited_country == null)
+    return res.redirect("/");
+
+  let username = req.session.user.username;
+  let country_code = await getISObyCountryName(req.body.visited_country);
+
+
+  console.log(`deleting ${username} - ${country_code}`);
+
+  try{
+    let deleteSQL = await pool.query("delete FROM users_countries WHERE users_countries.user_name = $1 and users_countries.country_code = $2", [username, country_code]); 
+      console.log(deleteSQL);
+    
+
+  }
+  catch(error){
+    console.error(error);
+  }
+
+  res.redirect("/");
+});
+
 
 
 
@@ -239,17 +267,32 @@ function capitalizeFirstLetter(val) {
 }
 
 async function getISObyCountryName(c_name){
-  c_name = capitalizeFirstLetter(c_name);
-  const getISO =  await pool.query("SELECT country_code FROM countries WHERE country_name like '%' ||  ($1) || '%'",  [c_name]);
-  if(getISO.rowCount < 1)
-  {
-    console.warn("There is not any country like ", c_name);
+  c_name = c_name.trim(); // fontos!
+  const getISO = await pool.query(
+    "SELECT country_code FROM countries WHERE country_name ILIKE $1",
+    [c_name]
+  );
+  if(getISO.rowCount < 1){
+    console.warn("There is not any country like", c_name);
     return false;
   }
-
-  console.log(getISO.rows);
   return getISO.rows[0]["country_code"];
 }
+
+async function getCountryNameByISO(iso_code) {
+  iso_code = iso_code.trim(); 
+  const result = await pool.query(
+    "SELECT country_name FROM countries WHERE country_code = $1",
+    [iso_code]
+  );
+  if (result.rowCount < 1) {
+    console.warn("There is no country with the ISO code", iso_code);
+    return false;
+  }
+  return result.rows[0]["country_name"];
+}
+
+
 
 
 function isAuthenticated(req, res, next) {
@@ -260,6 +303,30 @@ function isAuthenticated(req, res, next) {
   } else {
     res.redirect("/login");
   }
+}
+
+async function getCountryList(username){
+  //getting the countries where the user has not been before
+  let query = "select countries.country_name from countries where countries.country_name not in (select countries.country_name from countries join users_countries on users_countries.country_code = countries.country_code join users on users_countries.user_name = users.username where users.username = $1 )";
+  const unvisited_countries =  await pool.query(query,  [username]);
+  let clist = [];
+  unvisited_countries.rows.forEach(element => {
+    clist.push(element.country_name)
+  });
+
+  return clist;
+}
+
+async function getVisitedCountries(username){
+  //getting the countries where the user has not been before
+  let query = "select countries.country_name from countries join users_countries on users_countries.country_code = countries.country_code join users on users_countries.user_name = users.username where users.username = $1";
+  const unvisited_countries =  await pool.query(query,  [username]);
+  let clist = [];
+  unvisited_countries.rows.forEach(element => {
+    clist.push(element.country_name)
+  });
+
+  return clist;
 }
 
 
