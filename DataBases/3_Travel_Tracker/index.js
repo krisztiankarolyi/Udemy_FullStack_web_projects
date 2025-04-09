@@ -2,6 +2,9 @@ import express from "express";
 import bodyParser from "body-parser";
 import pg from "pg";
 import dotenv from "dotenv";
+import crypto from 'crypto';
+import session from "express-session";
+import { register } from "module";
 
 dotenv.config();
 
@@ -10,6 +13,14 @@ const port = 3000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
+app.use(session({
+  secret: process.env.SESSION_KEY, 
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: process.env.HTTPS === "true" }
+}));
+
 
 const pool = new pg.Pool({
   user: process.env.PGUSER,
@@ -33,12 +44,13 @@ async function refreshData() {
   }
 }
 
-app.get("/", async (req, res) => {
+app.get("/", isAuthenticated, async (req, res) => {
   await refreshData();
-  res.render("index.ejs", { countries: visited_countries, total: total });
+  res.render("index.ejs", { countries: visited_countries, total: total, username: req.session.user.username});
+
 });
 
-app.post("/reset", async(req, res) => {
+app.post("/reset",  async(req, res) => {
   try {
     await pool.query("DELETE FROM visited_countries WHERE id > 0");
     console.log("✅ Országok törölve:",);
@@ -49,7 +61,53 @@ app.post("/reset", async(req, res) => {
   res.redirect("/");
 });
 
-app.post("/add", async (req, res) => {
+app.get("/login", async(req, res) => {
+  if (req.session.user) res.redirect('/');
+  else  res.render("login.ejs")
+});
+
+app.get("/register", async(req, res) => {
+  if (req.session.user) res.redirect('/');
+  else res.render("register.ejs")
+  
+});
+
+app.post("/register", async(req, res) => {
+  let errormsg = "";
+  let username = req.body.username;
+  let passwordHash1 = crypto.createHash('sha256').update(req.body.password).digest('hex');
+  let passwordHash2 = crypto.createHash('sha256').update(req.body.password2).digest('hex');
+  if(passwordHash1 != passwordHash2){
+    errormsg = "The passwords don't match";
+    res.render("register.ejs", {error: errormsg});
+    return;
+  }
+
+  try{
+    let username_exists_query = await pool.query("SELECT  users.username FROM users WHERE users.username = $1", [username]);
+
+    if (username_exists_query.rowCount > 0){
+      let errormsg = "The username is already taken";
+      res.render("register.ejs", {error: errormsg});
+      return;
+    }
+
+    await pool.query("INSERT INTO users (username, password) VALUES ($1, $2)", [username, passwordHash1]);
+    console.info("Sikeres regisztráció!");
+  }
+  catch(error){
+    console.error("❌ Hiba a regisztráció során:", error.stack);
+
+  }
+
+  console.log("uname: ", username, "pw: ", passwordHash1);
+
+  res.render("login.ejs", {error: "Registration was successful, please login!"});
+  
+  
+});
+
+app.post("/add", isAuthenticated, async (req, res) => {
   let country = req.body["country"].toUpperCase();
   if(country.length != 2){
     console.log("trying to retrieve ISO code from country name");
@@ -76,6 +134,57 @@ app.post("/add", async (req, res) => {
   }
   res.redirect("/");
 });
+
+
+app.post("/login", async (req, res) => {
+  if (req.session.user) {
+    req.body.user = undefined;
+  }
+  const username = req.body.username;
+  const password = req.body.password;
+
+  // Jelszó hash
+  const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+
+  try {
+    const result = await pool.query(
+      "SELECT * FROM users WHERE username = $1 AND password = $2",
+      [username, passwordHash]
+    );
+
+    if (result.rowCount === 1) {
+      console.log("✅ Sikeres bejelentkezés:", username);
+      req.session.user = {
+        username: username
+      };
+      await refreshData();
+
+      res.redirect("/");
+
+    } else {
+      console.warn("❌ Hibás bejelentkezési adatok");
+      res.render("login.ejs", {
+        error: "Invalid username or password."
+      });
+    }
+  } catch (err) {
+    console.error("❌ Hiba a bejelentkezés során:", err.stack);
+    res.render("login.ejs", {
+      error: "An error occurred during login."
+    });
+  }
+});
+
+app.get("/logout", (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      console.error("❌ Hiba kijelentkezéskor:", err);
+    }
+    res.redirect("/login");
+  });
+});
+
+
 
 
 app.listen(port, () => {
@@ -121,6 +230,17 @@ async function getISObyCountryName(c_name){
 
   console.log(getISO.rows);
   return getISO.rows[0]["country_code"];
+}
+
+
+function isAuthenticated(req, res, next) {
+  console.log(req.session);
+
+  if (req.session.user) {
+    next();
+  } else {
+    res.redirect("/login");
+  }
 }
 
 
