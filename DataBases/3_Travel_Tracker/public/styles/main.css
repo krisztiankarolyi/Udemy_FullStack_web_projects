@@ -76,7 +76,7 @@ body {
 @media (max-width: 768px) {
   .visited-select-container {
     position: fixed;
-    bottom: 10px;
+    bottom: 60px;
     top: auto;
     right: 50%;
     transform: translateX(50%);
