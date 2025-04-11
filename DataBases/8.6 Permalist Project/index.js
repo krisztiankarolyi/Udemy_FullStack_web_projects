@@ -53,8 +53,8 @@ app.post("/add", isAuthenticated, async (req, res) => {
 
   if (!title) {
     console.warn("Invalid add request: Empty title");
-    return res.status(400).send("Title cannot be empty.");
-
+    //return res.status(400).send("Title cannot be empty.");
+     res.redirect("/");
   }
 
   try {
