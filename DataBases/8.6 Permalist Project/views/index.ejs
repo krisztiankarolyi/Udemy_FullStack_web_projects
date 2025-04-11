@@ -12,7 +12,11 @@
   <a href="/logout" class="logout-link">Logout</a>
 </div>
 
-<div class="box">
+<div class="box ">
+  <div class="shooting-star"></div>
+  <div class="shooting-star"></div>
+  <div class="shooting-star"></div>
+  <div class="shooting-star"></div>
   <% if (listItems.length === 0) { %>
     <p style="text-align: center; color: #999;">Nincs még egyetlen feljegyzés sem.</p>
   <% } else { %>
@@ -48,11 +52,14 @@
       </div>
     <% } %>
   <% } %>
-
-  <form class="item" action="/add" method="post">
-    <input type="text" name="newItem" required placeholder="New Item" autocomplete="off" autofocus="true" />
-    <button class="add" type="submit" name="list" value="<%= listTitle %>">+</button>
-  </form>
+    
+  <div class="newItem">
+    <form class="item" action="/add" method="post">
+      <input type="text" name="newItem" required placeholder="New Item" autocomplete="off" autofocus="true" />
+      <button class="add" type="submit" name="list" value="<%= listTitle %>">+</button>
+    </form>
+  </div>
+ 
 </div>
 
 <script>
