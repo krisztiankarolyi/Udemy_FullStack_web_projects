@@ -63,12 +63,11 @@ app.post("/add", isAuthenticated, async (req, res) => {
       'INSERT INTO items (title) VALUES ($1)',
       [title]
     );
-    res.redirect("/");
   } catch error) {
-     res.redirect("/");
-    //console.error('Error adding new item:', error);
-    //res.status(500).send('Something went wrong while adding the item');
+    console.error('Error adding new item:', error);
+    res.status(500).send('Something went wrong while adding the item');
   }
+      res.redirect("/");
 });
 
 app.post("/edit", isAuthenticated, async (req, res) => {
