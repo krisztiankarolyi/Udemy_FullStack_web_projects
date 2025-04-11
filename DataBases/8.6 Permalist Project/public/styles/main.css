@@ -32,6 +32,8 @@ h1 {
 
 .box {
   max-width: 800px;
+  max-height: 800px;
+  overflow-y: auto;
   margin: 50px auto;
   background: #ffffff;
   border-radius: 5px;
