@@ -48,7 +48,6 @@ app.get("/", isAuthenticated, async (req, res) => {
 
 });
 
-
 app.post("/add", isAuthenticated, async (req, res) => {
   const title = req.body.newItem?.trim();
 
@@ -60,8 +59,8 @@ app.post("/add", isAuthenticated, async (req, res) => {
 
   try {
     await pool.query(
-      'INSERT INTO items (title) VALUES ($1)',
-      [title]
+      'INSERT INTO items (title, user_id) VALUES ($1, $2)',
+      [title, req.session.user.id]
     );
     
        res.redirect("/");
