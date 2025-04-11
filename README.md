@@ -1,6 +1,12 @@
 # Udemy_FullStack_web_projects
 I upload here my mini projects made during the Udemy FullStack web developer course.  (https://www.udemy.com/share/101qYw3@ty8g8At8Q5JU-5ULxocoRHTyeBr0-vYcbJVXwMipfQuX2xtVHhB4pOISxbbKSqSu/)
 
+
+Permaslist: https://permalist-vvkf.onrender.com/
+![image](https://github.com/user-attachments/assets/24fe866d-f8bd-414d-8d73-8666061e3274)
+
+
+
 Travel map (NodeJS, PostgreSQL)
 https://travel-tracker-os60.onrender.com/
 ![image](https://github.com/user-attachments/assets/7d7b6bb7-2939-45d1-8d25-d2f59f1ae906)
