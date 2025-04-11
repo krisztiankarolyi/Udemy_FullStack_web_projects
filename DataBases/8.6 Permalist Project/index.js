@@ -65,7 +65,7 @@ app.post("/add", isAuthenticated, async (req, res) => {
     );
   } catch (error) {
     console.error('Error adding new item:', error);
-    res.status(500).send('Something went wrong while adding the item');
+    //res.status(500).send('Something went wrong while adding the item');
   }
       res.redirect("/");
 });
