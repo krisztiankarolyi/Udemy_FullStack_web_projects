@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,38 +8,44 @@
 </head>
 
 <body>
-  <% if (typeof username !== "undefined") { %>
-    <p class="msg">Welcome, <%= username %>! <a href="/logout">logout</a></p>
-  <% } %>
+
+  <div class="user-container">
+    <p>Welcome, <%= username %> <a href="/logout">Logout</a> </p>
+  </div>
 
   <div class="visited-select-container">
     <form method="POST" action="/unvisit">
-      <label for="visitedSelect">Visited Countries:</label>
-      <select id="visitedSelect" name="visited_country" class="input-box">
-        <% visited_countries.forEach(function(country) { %>
-          <option value="<%= country %>"><%= country %></option>
-        <% }); %>
-      </select>
-      <button type="submit" class="reset-btn">Remove from list</button>
+      <div class="row">
+        <div id="select">
+          <select id="visitedSelect" name="visited_country" class="input-box">
+            <% visited_countries.forEach(function(country) { %>
+              <option value="<%= country %>"><%= country %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div id="btn">
+          <button type="submit" class="reset-btn slim-btn">Remove</button>
+        </div>
+      </div>
+      <label for="visitedSelect"><br> Total visited Countries: <%=total%></label>
     </form>
   </div>
   
   
 
   <div class="form-row">
-    <form action="/add" method="post" class="form-inline">
+    <form action="/add" method="post" class="form-inline one-line-form">
       <select name="country" autofocus class="input-box" required>
         <% county_list.forEach(function(country) { %>
           <option><%= country %></option>
         <% }); %>
       </select>
-      <button type="submit" class="add-btn">Add</button>
-    </form>
-  
-    <form action="/reset" method="post" class="form-inline reset-form">
-      <button type="submit" class="reset-btn">Reset</button>
+      <button type="submit" class="add-btn slim-btn">Add</button>
+      <button type="reset" class="reset-btn slim-btn">Reset</button>
     </form>
   </div>
+  
+  
   
 
   <section class="ag-canvas">
@@ -400,8 +405,8 @@
         d="M562.709,526.998L561.219,526.697L560.274,527.059L558.917,526.548L557.776,526.516L555.989,525.158L553.821,524.698L552.996,522.803L552.989,521.752L551.788,521.432L548.615,518.177L547.733,516.471L547.169,515.946L546.09,513.602L549.224,513.922L550.135,514.26L551.082,514.192L552.634,512.299L555.073,509.904L556.076,509.676L556.417,508.67L558.014,507.516L560.138,507.12L560.319,508.2L562.658,508.142L563.957,508.754L564.562,509.472L565.896,509.683L567.353,510.617L567.359,514.312L566.813,516.347L566.692,518.55L567.143,519.426L566.826,521.172L566.402,521.443L565.663,523.593z" />
     </svg>
   </section>
-  <h2 class="total-count">Total Countries: <%=total%>
-  </h2>
+
+
   <script>
     const country_codes = "<%= countries %>".split(",") 
     console.log(typeof ("<%= countries %>"))

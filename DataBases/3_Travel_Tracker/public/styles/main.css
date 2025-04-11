@@ -1,5 +1,6 @@
 html {
   box-sizing: border-box;
+  overflow: hidden;
 }
 *, *:before, *:after {
   box-sizing: inherit;
@@ -18,7 +19,7 @@ body {
 /* GENERAL FORM STYLES */
 .form-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: no-wrap;
   gap: 12px;
   margin: 20px 0;
   justify-content: center;
@@ -65,7 +66,7 @@ body {
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: #222;
+  background-color: rgba(0,0,0, .0);
   padding: 8px 12px;
   border-radius: 8px;
   z-index: 100;
@@ -73,22 +74,48 @@ body {
   font-size: 14px;
 }
 
-@media (max-width: 768px) {
+.user-container {
+  position: fixed;
+  bottom: 20px;
+  left: 10px;
+  background-color: rgba(0,0,0, .0);
+  padding: 8px 12px;
+  border-radius: 8px;
+  z-index: 100;
+  color: white;
+  font-size: 14px;
+}
+
+.row{width: 100%; display: flex; flex-wrap: nowrap; gap: 5px;}
+
+
+@media (max-width: 1200px) {
   .visited-select-container {
     position: fixed;
-    bottom: 60px;
+    bottom: 5px;
     top: auto;
     right: 50%;
     transform: translateX(50%);
     z-index: 999;
     width: 90%;
-    text-align: center;
+    text-align: left;
   }
 
+  .row{width: 100%; display: flex; flex-wrap: nowrap; gap: 5px;}
+   #btn{
+    width: 20%;
+   }
+   #select{width: 80%;}
+
+.user-container {
+  bottom: 70px; }
+
   .form-row, .form-inline {
-    flex-direction: column;
+    flex-direction: row;
     align-items: stretch;
+    width: 95%;
   }
+
 
   .input-box {
     width: 100%;
@@ -131,6 +158,7 @@ body {
   }
 }
 
+
 /* BOTTOM TOTAL COUNTER */
 .total-count {
   color: white;
@@ -138,7 +166,7 @@ body {
   padding: 10px 15px;
   left: 0;
   bottom: 0;
-  background-color: #1b1e23;
+  background-color: rgba(0,0,0, .1);
   width: 100%;
   text-align: center;
   font-size: 16px;
@@ -171,4 +199,22 @@ body {
   background-color: transparent;
   position: relative;
 }
+
+.one-line-form {
+  flex-wrap: nowrap; /* Ne törje sorba az elemeket */
+  gap: 6px;
+}
+
+.one-line-form .input-box {
+  flex: 1; /* Vegye fel a maradék helyet */
+  min-width: 0;
+}
+
+.slim-btn {
+  padding: 6px 10px;
+  font-size: 14px;
+  white-space: nowrap; 
+  flex-shrink: 0; 
+}
+
 

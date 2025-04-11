@@ -4,7 +4,6 @@ import pg from "pg";
 import dotenv from "dotenv";
 import crypto from 'crypto';
 import session from "express-session";
-import { register } from "module";
 
 dotenv.config();
 
@@ -60,7 +59,7 @@ app.get("/", isAuthenticated, async (req, res) => {
   res.render("index.ejs", {
     countries: visited_countries,
     total: total,
-    username: req.session.user.username.HTTP,
+    username: req.session.user.username,
     county_list: county_list,
     visited_countries: visited_county_list
   });
@@ -163,6 +162,8 @@ app.post("/login", async (req, res) => {
   }
   const username = req.body.username;
   const password = req.body.password;
+  const rememberMe = req.body.remember_me === "on"; // HTML checkbox = "on", ha be van jelölve
+
 
   // Jelszó hash
   const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
@@ -178,6 +179,13 @@ app.post("/login", async (req, res) => {
       req.session.user = {
         username: username
       };
+
+      if (rememberMe) {
+        req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 7;
+      } else {
+        req.session.cookie.expires = false;
+      }
+
       await refreshData();
 
       res.redirect("/");
@@ -219,7 +227,7 @@ app.post("/unvisit", isAuthenticated, async (req, res) => {
     let deleteSQL = await pool.query("delete FROM users_countries WHERE users_countries.user_name = $1 and users_countries.country_code = $2", [username, country_code]); 
       console.log(deleteSQL);
     
-
+ 
   }
   catch(error){
     console.error(error);
