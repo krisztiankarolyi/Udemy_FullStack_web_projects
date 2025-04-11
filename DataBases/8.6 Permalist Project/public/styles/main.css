@@ -12,6 +12,8 @@ html {
 
 body {
   display: flex;
+  overflow-x: hidden;
+  overflow-y:auto;
   flex-direction: column;
   justify-content: stretch;
   min-height: 95vh;
