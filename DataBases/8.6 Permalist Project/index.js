@@ -50,11 +50,12 @@ app.get("/", isAuthenticated, async (req, res) => {
 
 
 app.post("/add", isAuthenticated, async (req, res) => {
-  const title = req.body.newItemTitle?.trim();
+  const title = req.body.newItem?.trim();
 
   if (!title) {
     console.warn("Invalid add request: Empty title");
-    return res.status(400).send("Title cannot be empty.");
+    //return res.status(400).send("Title cannot be empty.");
+     res.redirect("/");
   }
 
   try {
@@ -63,9 +64,10 @@ app.post("/add", isAuthenticated, async (req, res) => {
       [title]
     );
     res.redirect("/");
-  } catch (error) {
-    console.error('Error adding new item:', error);
-    res.status(500).send('Something went wrong while adding the item');
+  } catch error) {
+     res.redirect("/");
+    //console.error('Error adding new item:', error);
+    //res.status(500).send('Something went wrong while adding the item');
   }
 });
 
