@@ -48,30 +48,26 @@ app.get("/", isAuthenticated, async (req, res) => {
 
 });
 
+
 app.post("/add", isAuthenticated, async (req, res) => {
-  const item = req.body.newItem;  
-  const userId = req.session.user.id;  
-  
+  const title = req.body.newItemTitle?.trim();
+
+  if (!title) {
+    console.warn("Invalid add request: Empty title");
+    return res.status(400).send("Title cannot be empty.");
+  }
 
   try {
-    // Insert the new item into the database
-    const result = await pool.query(
-      'INSERT INTO items (title, user_id) VALUES ($1, $2) RETURNING *',
-      [item, userId]
+    await pool.query(
+      'INSERT INTO items (title) VALUES ($1)',
+      [title]
     );
-
-    // Check if the item was successfully inserted
-    if (result.rowCount === 0) {
-      return res.status(500).send("Failed to add item");
-    }
-
-    res.redirect("/");  
+    res.redirect("/");
   } catch (error) {
-    console.error('Error adding item:', error);
-    res.status(500).send('Something went wrong');
+    console.error('Error adding new item:', error);
+    res.status(500).send('Something went wrong while adding the item');
   }
 });
-
 
 app.post("/edit", isAuthenticated, async (req, res) => {
   const id = req.body.updatedItemId?.trim();  
