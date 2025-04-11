@@ -54,8 +54,8 @@ app.post("/add", isAuthenticated, async (req, res) => {
 
   if (!title) {
     console.warn("Invalid add request: Empty title");
-    //return res.status(400).send("Title cannot be empty.");
-     res.redirect("/");
+    return res.status(400).send("Title cannot be empty.");
+
   }
 
   try {
@@ -63,11 +63,13 @@ app.post("/add", isAuthenticated, async (req, res) => {
       'INSERT INTO items (title) VALUES ($1)',
       [title]
     );
+    
+       res.redirect("/");
   } catch (error) {
     console.error('Error adding new item:', error);
-    //res.status(500).send('Something went wrong while adding the item');
+    res.status(500).send('Something went wrong while adding the item');
   }
-      res.redirect("/");
+    
 });
 
 app.post("/edit", isAuthenticated, async (req, res) => {
