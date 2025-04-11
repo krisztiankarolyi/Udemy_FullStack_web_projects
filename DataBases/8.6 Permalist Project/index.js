@@ -74,9 +74,15 @@ app.post("/add", isAuthenticated, async (req, res) => {
 
 
 app.post("/edit", isAuthenticated, async (req, res) => {
-  const id = req.body.updatedItemId;  
-  const newTitle = req.body.updatedItemTitle;  
-  
+  const id = req.body.updatedItemId?.trim();  
+  const newTitle = req.body.updatedItemTitle?.trim();  
+
+  // Validáció
+  if (!id || !newTitle) {
+    console.warn("Invalid edit request:", { id, newTitle });
+    return res.status(400).send("Invalid request: missing or empty fields.");
+  }
+
   console.log("Editing item with ID:", id, "New title:", newTitle);
   
   try {
@@ -95,8 +101,6 @@ app.post("/edit", isAuthenticated, async (req, res) => {
     res.status(500).send('Something went wrong');
   }
 });
-
-
 
 app.post("/delete", isAuthenticated, async (req, res) => {
   const id = req.body.removedItemId; 
