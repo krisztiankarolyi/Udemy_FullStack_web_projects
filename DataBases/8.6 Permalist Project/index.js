@@ -53,8 +53,7 @@ app.post("/add", isAuthenticated, async (req, res) => {
 
   if (!title) {
     console.warn("Invalid add request: Empty title");
-    //return res.status(400).send("Title cannot be empty.");
-     res.redirect("/");
+    return res.redirect("/"); // FONTOS: return, hogy ne fusson tovább a kód
   }
 
   try {
@@ -62,13 +61,11 @@ app.post("/add", isAuthenticated, async (req, res) => {
       'INSERT INTO items (title, user_id) VALUES ($1, $2)',
       [title, req.session.user.id]
     );
-    
-       res.redirect("/");
+    return res.redirect("/"); // Itt is return
   } catch (error) {
     console.error('Error adding new item:', error);
-    //res.status(500).send('Something went wrong while adding the item');
+    return res.status(500).send('Something went wrong while adding the item');
   }
-         res.redirect("/");
 });
 
 app.post("/edit", isAuthenticated, async (req, res) => {
