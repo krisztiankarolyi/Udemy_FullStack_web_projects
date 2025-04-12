@@ -1,77 +1,103 @@
-<%- include('partials/header.ejs'); -%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= listTitle %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/bg.css">
+</head>
+<body class="bg-dark text-white d-flex flex-column">
 
-<div class="box" id="heading">
-  <h1>
+  <!-- Navbar -->
+  <div class="user-bar d-flex align-items-center justify-content-between px-3 py-2 text-white">
+    <span>Welcome, <%= user.username %>!</span>
+    <div class="d-flex align-items-center gap-2">
+      <img src="<%= user.avatarURL %>" alt="Avatar" class="user-avatar rounded-circle">
+      <a href="/logout" class="logout-link text-white fw-bold text-decoration-none">Logout</a>
+    </div>
+  </div>
+
+  <!-- Title -->
+  <div class="text-center py-3 bg-primary fs-4 fw-bold">
     <%= listTitle %>
-  </h1>
+  </div>
+
+  <!-- Filter Bar -->
+<!-- Filter Bar -->
+<div class="filter-bar py-3 px-3 py-2 bg-dark border-bottom mb-3">
+  <form class="d-flex flex-column flex-sm-row gap-2 flex-wrap" method="get" action="/">
+    <input type="text" name="q" value="<%= query.q || '' %>" class="form-control" placeholder="Search by title..." />
+
+    <select name="filter" class="form-select">
+      <option value="all" <%= query.filter === 'all' ? 'selected' : '' %>>All</option>
+      <option value="done" <%= query.filter === 'done' ? 'selected' : '' %>>Done</option>
+      <option value="todo" <%= query.filter === 'todo' ? 'selected' : '' %>>To be done</option>
+    </select>
+
+
+
+    <button type="submit" class="btn btn-primary">Filter</button>
+  </form>
 </div>
 
-<div class="user-bar">
-  <span>Welcome, <%= user.username %>!</span>
-  <img src="<%= user.avatarURL %>" alt="Avatar" class="user-avatar">
-  <a href="/logout" class="logout-link">Logout</a>
-</div>
 
-<div class="box ">
-  <div class="shooting-star"></div>
-  <div class="shooting-star"></div>
-  <div class="shooting-star"></div>
-  <div class="shooting-star"></div>
-  <% if (listItems.length === 0) { %>
-    <p style="text-align: center; color: #999;">Nincs még egyetlen feljegyzés sem.</p>
-  <% } else { %>
-    <% for(let item of listItems) { %>
-      <div class="item">
-        <form action="/complete" method="post">
-         <input type="hidden" name="completedItemId" value="<%= item.id %>">
-         <input type="hidden" name="done" value="<%= item.done %>">
-          <input type="checkbox" onchange="this.form.submit()" <%= item.done ? 'checked' : '' %> >
-        </form>
+  <!-- Scrollable List -->
+  <div class=" list-container flex-grow-1 overflow-auto px-3 py-2">
+    <% if (listItems.length === 0) { %>
+      <p class="text-center text-secondary">You are all caught up.</p>
+    <% } else { %>
+      <% for(let item of listItems) { %>
+        <div class="item d-flex align-items-center justify-content-between border-bottom py-2">
+          
+          <form action="/complete" method="post">
+            <input type="hidden" name="completedItemId" value="<%= item.id %>">
+            <input type="hidden" name="done" value="<%= item.done %>">
+            <input type="checkbox" onchange="this.form.submit()" <%= item.done ? 'checked' : '' %> >
+          </form>
 
-        <p id="title<%=item.id%>" class="<%= item.done ? 'completed' : '' %>">
-          <%= item.title %> 
-        </p>
+          <p id="title<%=item.id%>" class="flex-grow-1 mx-2 mb-0 <%= item.done ? 'completed' : '' %>">
+            <%= item.title %> 
+          </p>
 
-        <form class="edit" action="/edit" method="post">
-          <input type="hidden" name="updatedItemId" value="<%= item.id %>">
-          <input id="input<%=item.id%>" type="text" name="updatedItemTitle" value="<%= item.title %>" autocomplete="off"
-            autofocus="true" hidden="true" />
-          <button id="done<%=item.id%>" class="edit" type="submit" hidden><img class="icon"
-              src="/assets/icons/check-solid.svg" alt="tick image"></button>
-        </form>
+          <form class="edit" action="/edit" method="post">
+            <input type="hidden" name="updatedItemId" value="<%= item.id %>">
+            <input id="input<%=item.id%>" type="text" name="updatedItemTitle" value="<%= item.title %>" autocomplete="off"
+              hidden />
+            <button id="done<%=item.id%>" class="btn btn-success btn-sm" type="submit" hidden>
+              ✔
+            </button>
+          </form>
 
-        <button id="edit<%=item.id%>" class="edit" onclick="handler('<%=item.id%>')"><img class="icon"
-            src="/assets/icons/pencil-solid.svg" alt="pencil image"></button>
+          <button id="edit<%=item.id%>" class="btn btn-warning btn-sm me-2" onclick="handler('<%=item.id%>')">
+            ✏️
+          </button>
 
-         <form method="post" action="/delete">
-          <input type="hidden" name="removedItemId" value="<%= item.id %>">
-            <button id="delete<%=item.id%>" class="delete" onclick="this.form.submit()"><img class="icon"
-              src="/assets/icons/bin.png" alt="bin image"></button>
-         </form> 
-        
-      </div>
+          <form method="post" action="/delete">
+            <input type="hidden" name="removedItemId" value="<%= item.id %>">
+            <button id="delete<%=item.id%>" class="btn btn-danger btn-sm">🗑️</button>
+          </form> 
+        </div>
+      <% } %>
     <% } %>
-  <% } %>
-    
-  <div class="newItem">
-    <form class="item" action="/add" method="post">
-      <input type="text" name="newItem" required placeholder="New Item" autocomplete="off" autofocus="true" />
-      <button class="add" type="submit" name="list" value="<%= listTitle %>">+</button>
+  </div>
+
+  <!-- Fixed New Item Input -->
+  <div class="newItem p-3 bg-dark border-top">
+    <form class="d-flex" action="/add" method="post">
+      <input type="text" name="newItem" class="form-control me-2" required placeholder="New Item" autocomplete="off" />
+      <button class="btn btn-danger rounded-circle" type="submit" name="list" value="<%= listTitle %>">+</button>
     </form>
   </div>
- 
-</div>
 
-<script>
-  function handler(id) {
-    document.getElementById("title" + id).setAttribute("hidden", true);
-    document.getElementById("edit" + id).setAttribute("hidden", true);
-    document.getElementById("done" + id).removeAttribute("hidden");
-    document.getElementById("input" + id).removeAttribute("hidden");
-
-    document.getElementById("delete" + id).removeAttribute("hidden");
-  }
-</script>
-
-<%- include('partials/footer.ejs'); -%>
-
+  <script>
+    function handler(id) {
+      document.getElementById("title" + id).hidden = true;
+      document.getElementById("input" + id).hidden = false;
+      document.getElementById("done" + id).hidden = false;
+      document.getElementById("edit" + id).hidden = true;
+    }
+  </script>
+</body>
+</html>

@@ -34,19 +34,36 @@ const pool = new pg.Pool({
 let items = [];
 
 
-app.get("/", isAuthenticated, async (req, res) => {
-  //console.log("Welcomne, ", req.session.user.username, "ID: ", req.session.user.id);
-  items = await getNotes(req.session.user.id);
+app.get("/", isAuthenticated,async(req, res) => {
+  let listItems = await getNotes(req.session.user.id);
+  const query = {
+    q: req.query.q || '',
+    filter: req.query.filter || 'all'
+  };
 
+  let filteredItems = listItems; // vagy az adatbázisból lekérdezve
+
+  if (query.q) {
+    filteredItems = filteredItems.filter(item =>
+      item.title.toLowerCase().includes(query.q.toLowerCase())
+    );
+  }
+  
+
+  if (query.filter === "done") {
+    filteredItems = filteredItems.filter(item => item.done);
+  } else if (query.filter === "todo") {
+    filteredItems = filteredItems.filter(item => !item.done);
+  }
 
   res.render("index.ejs", {
-    listTitle: "Today",
-    listItems: items,
-    user: req.session.user
+    listTitle: "Today",      // vagy amit használsz
+    listItems: filteredItems,
+    user: req.session.user,  // ha van
+    query                    // <-- EZ HIÁNYZOTT
   });
-
-
 });
+
 
 app.post("/add", isAuthenticated, async (req, res) => {
   const title = req.body.newItem?.trim();
