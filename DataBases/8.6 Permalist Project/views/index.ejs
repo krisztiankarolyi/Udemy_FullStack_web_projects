@@ -24,67 +24,65 @@
     <%= listTitle %>
   </div>
 
-  <!-- Filter Bar -->
 <!-- Filter Bar -->
-<div class="filter-bar py-3 px-3 py-2 bg-dark border-bottom mb-3">
-  <form class="d-flex flex-column flex-sm-row gap-2 flex-wrap" method="get" action="/">
-    <input type="text" name="q" value="<%= query.q || '' %>" class="form-control" placeholder="Search by title..." />
-
-    <select name="filter" class="form-select">
-      <option value="all" <%= query.filter === 'all' ? 'selected' : '' %>>All</option>
-      <option value="done" <%= query.filter === 'done' ? 'selected' : '' %>>Done</option>
-      <option value="todo" <%= query.filter === 'todo' ? 'selected' : '' %>>To be done</option>
-    </select>
-
-
-
-    <button type="submit" class="btn btn-primary">Filter</button>
-  </form>
+<div class="filter-bar py-3 px-3 mb-1 py-2 bg-dark border-bottom ">
+  <div class="row g-2 align-items-center">
+    <div class="col-12 col-sm-6">
+      <input type="text" name="q" id="searchText" value="<%= query.q || '' %>" class="form-control" placeholder="Search by title..." />
+    </div>
+    <div class="col-12 col-sm-4">
+      <select name="filter" id="filter" class="form-select">
+        <option value="all" <%= query.filter === 'all' ? 'selected' : '' %>>All</option>
+        <option value="done" <%= query.filter === 'done' ? 'selected' : '' %>>Done</option>
+        <option value="todo" <%= query.filter === 'todo' ? 'selected' : '' %>>To be done</option>
+      </select>
+    </div>
+    <div class="col-12 col-sm-2">
+      <input type="button"  class="btn btn-primary w-100" value="Filter" onclick="search()">
+    </div>
+  </div>
+  
 </div>
 
 
   <!-- Scrollable List -->
-  <div class=" list-container flex-grow-1 overflow-auto px-3 py-2">
+  <div class=" list-container flex-grow-1 mt-3 overflow-auto px-3 py-2" id="todo-list">
     <% if (listItems.length === 0) { %>
       <p class="text-center text-secondary">You are all caught up.</p>
     <% } else { %>
       <% for(let item of listItems) { %>
-        <div class="item d-flex align-items-center justify-content-between border-bottom py-2">
+        <div id="item<%= item.id %>" class="item d-flex align-items-center justify-content-between border-bottom py-2">
           
           <form action="/complete" method="post">
-            <input type="hidden" name="completedItemId" value="<%= item.id %>">
-            <input type="hidden" name="done" value="<%= item.done %>">
-            <input type="checkbox" onchange="this.form.submit()" <%= item.done ? 'checked' : '' %> >
+            <input type="checkbox" <%= item.done ? 'checked' : '' %>  onchange="toggleComplete(<%= item.id %>, <%= item.done ? 1 : 0 %>)">
           </form>
 
           <p id="title<%=item.id%>" class="flex-grow-1 mx-2 mb-0 <%= item.done ? 'completed' : '' %>">
             <%= item.title %> 
           </p>
 
-          <form class="edit" action="/edit" method="post">
+          <form class="edit edit-form"  data-id="<%= item.id %>">
             <input type="hidden" name="updatedItemId" value="<%= item.id %>">
-            <input id="input<%=item.id%>" type="text" name="updatedItemTitle" value="<%= item.title %>" autocomplete="off"
-              hidden />
-            <button id="done<%=item.id%>" class="btn btn-success btn-sm" type="submit" hidden>
-              ✔
-            </button>
+            <div class="d-flex flex-row align-items-center justify-content-between">
+              <div class="p-10">
+                <input id="input<%=item.id%>" type="text" required name="updatedItemTitle" value="<%= item.title %>" autocomplete="off" hidden>
+              </div>
+              <div class="p-2">
+                <button id="done<%=item.id%>" class="btn btn-success btn-sm text-light" type="submit" hidden> Done </button>
+              </div>
+            </div>      
           </form>
 
-          <button id="edit<%=item.id%>" class="btn btn-warning btn-sm me-2" onclick="handler('<%=item.id%>')">
-            ✏️
-          </button>
+          <button id="edit<%=item.id%>" class="btn btn-warning btn-sm me-2" onclick="handler(<%= item.id %>)"> ✏️</button>
+          <button type="button" id="delete<%=item.id%>" class="btn btn-danger btn-sm" onclick="deleteItem('<%= item.id %>')">🗑️ </button>
 
-          <form method="post" action="/delete">
-            <input type="hidden" name="removedItemId" value="<%= item.id %>">
-            <button id="delete<%=item.id%>" class="btn btn-danger btn-sm">🗑️</button>
-          </form> 
         </div>
       <% } %>
     <% } %>
   </div>
 
   <!-- Fixed New Item Input -->
-  <div class="newItem p-3 bg-dark border-top">
+  <div class="newItem p-3 mt-3 bg-dark border-top">
     <form class="d-flex" action="/add" method="post">
       <input type="text" name="newItem" class="form-control me-2" required placeholder="New Item" autocomplete="off" />
       <button class="btn btn-danger rounded-circle" type="submit" name="list" value="<%= listTitle %>">+</button>
@@ -98,6 +96,200 @@
       document.getElementById("done" + id).hidden = false;
       document.getElementById("edit" + id).hidden = true;
     }
+
+    document.querySelectorAll('.edit-form').forEach(form => {
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const itemId = this.dataset.id;
+      const input = document.getElementById("input" + itemId);
+      const newTitle = input.value;
+
+      try {
+        const res = await fetch('/api/edit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            updatedItemId: itemId,
+            updatedItemTitle: newTitle
+          })
+        });
+
+        console.log(JSON.stringify({ updatedItemId: itemId,
+          updatedItemTitle: newTitle}));
+
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById("title" + itemId).textContent = newTitle;
+          document.getElementById("title" + itemId).hidden = false;
+          input.hidden = true;
+          document.getElementById("done" + itemId).hidden = true;
+          document.getElementById("edit" + itemId).hidden = false;
+        } else {
+          alert("Sikertelen szerkesztés!");
+        }
+      } catch (err) {
+        console.error('Szerkesztési hiba:', err);
+      }
+    });
+  });
+
+
+
+  async function deleteItem(id) {
+    try {
+      console.log("deleting ", id);
+
+      const res = await fetch('/api/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ id })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Elem eltávolítása a DOM-ból:
+        const itemDiv = document.getElementById("item" + id);
+        if (itemDiv) itemDiv.remove();
+
+        // Ha minden elem törölve lett, kiírjuk az üzenetet:
+        if (document.querySelectorAll(".item").length === 0) {
+          document.querySelector(".list-container").innerHTML = `
+            <p class="text-center text-secondary">You are all caught up.</p>
+          `;
+        }
+      } else {
+        alert('Nem sikerült törölni!');
+      }
+    } catch (err) {
+      console.error('Törlési hiba:', err);
+    }
+}
+
+async function search() {
+  var q = document.getElementById("searchText").value;
+  var filter = document.getElementById("filter").value;
+
+  console.log("seaeching for ", q, ", ", filter);
+
+  try {
+
+      const res = await fetch('/api/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({'q': q, 'filter': filter })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        console.log("res: ", data.items)
+        renderTodoList(data.items);
+      } else {
+        alert('Nem sikerült keresni!');
+      }
+    } catch (err) {
+      console.error('Keresési hiba:', err);
+    }
+}
+
+  function setupCompleteListeners() {
+  document.querySelectorAll(".complete-form input[type='checkbox']").forEach(checkbox => {
+    checkbox.addEventListener("change", function () {
+      const id = this.closest("form").dataset.id;
+      const done = this.checked ? 1 : 0;
+      toggleComplete(id, done);
+    });
+  });
+}
+
+function renderTodoList(items) {
+  const list = document.getElementById("todo-list");
+  list.innerHTML = ""; // Töröljük a meglévő listát
+
+  items.forEach(item => {
+    const div = document.createElement("div");
+    div.id = `item${item.id}`;
+    div.classList.add("item", "d-flex", "align-items-center", "justify-content-between", "border-bottom", "py-2");
+
+    div.innerHTML = `
+      <form action="/complete" method="post">
+        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleComplete(${item.id}, ${item.done ? 1 : 0})">
+      </form>
+      <p id="title${item.id}" class="flex-grow-1 mx-2 mb-0 ${item.done ? 'completed' : ''}">
+        ${item.title}
+      </p>
+      <form class="edit edit-form" data-id="${item.id}">
+        <input type="hidden" name="updatedItemId" value="${item.id}">
+        <div class="d-flex flex-row align-items-center justify-content-between">
+          <div class="p-10">
+            <input id="input${item.id}" type="text" required name="updatedItemTitle" value="${item.title}" autocomplete="off" hidden>
+          </div>
+          <div class="p-2">
+            <button id="done${item.id}" class="btn btn-success btn-sm text-light" type="submit" hidden>Done</button>
+          </div>
+        </div>
+      </form>
+      <button id="edit${item.id}" class="btn btn-warning btn-sm me-2" onclick="handler(${item.id})">✏️</button>
+      <button type="button" id="delete${item.id}" class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')">🗑️</button>
+    `;
+
+    // Elem hozzáadása a listához
+    list.appendChild(div);
+  });
+
+  // Az eseménykezelők újra regisztrálása
+  setupCompleteListeners();
+}
+
+
+function updateSingleItem(item) {
+  const form = document.querySelector(`.complete-form[data-id="${item.id}"]`);
+  if (form) {
+    const checkbox = form.querySelector("input[type='checkbox']");
+    checkbox.checked = item.done;
+  }
+}
+
+
+
+async function toggleComplete(id, done) {
+  try {
+    const response = await fetch("/api/complete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ id, done })
+    });
+
+    const res = await response.json();
+
+    if (res.success) {
+      // Ha a teljes lista jön vissza:
+      // renderTodoList(res.items);
+      updateSingleItem(res.updated);
+    } else {
+      console.error("Hiba:", res.error);
+    }
+  } catch (err) {
+    console.error("API hiba:", err);
+  }
+}
+
+
+
+setupCompleteListeners();
   </script>
 </body>
 </html>
