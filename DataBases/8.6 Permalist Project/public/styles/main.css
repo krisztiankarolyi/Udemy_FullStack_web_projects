@@ -21,10 +21,7 @@ body {
 
 }
 
-.item:hover{
-  background-color:rgba(0,0,250, .1);
-  color: white;
-}
+
 
 .item:focus{
   background-color:rgba(0,0,250, .1);
@@ -84,6 +81,10 @@ input[type="checkbox"] {
   .list-container{
     width: 90%;
     margin: auto;
+  }
+  .item:hover{
+    background-color:rgba(0,0,250, .1);
+    color: white;
   }
 }
 
