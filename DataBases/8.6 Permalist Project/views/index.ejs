@@ -14,7 +14,7 @@
   <div class="user-bar d-flex align-items-center justify-content-between px-3 py-2 text-white">
     <span>Welcome, <%= user.username %>!</span>
     <div class="d-flex align-items-center gap-2">
-      <img src="<%= user.avatarURL %>" alt="Avatar" class="user-avatar rounded-circle">
+      <img src="<%= user.avatarURL || '/assets/icons/avatar.png' %>" alt="Avatar" class="user-avatar rounded-circle">
       <a href="/logout" class="logout-link text-white fw-bold text-decoration-none">Logout</a>
     </div>
   </div>

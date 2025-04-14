@@ -4,6 +4,8 @@ import pg from "pg";
 import dotenv from "dotenv";
 import crypto from 'crypto';
 import session from "express-session";
+import passport from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
 
 dotenv.config();
 const app = express();
@@ -12,8 +14,6 @@ const port = 3000;
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-app.use(express.static("public"));
-app.set('trust proxy', true);
 
 app.use(session({
     secret: process.env.SESSION_KEY,
@@ -25,25 +25,82 @@ app.use(session({
     }
 }));
 
+app.use(express.static("public"));
+app.set('trust proxy', true);
+app.use(passport.initialize());
+app.use(passport.session());
+
 const pool = new pg.Pool({
     user: process.env.PGUSER,
-    host: process.env.PGHOST, // csak host, nem teljes URL
+    host: process.env.PGHOST,
     database: process.env.PGDATABASE,
     password: process.env.PGPASSWORD,
-    port: parseInt(process.env.PGPORT), // biztos ami biztos
+    port: parseInt(process.env.PGPORT)
 });
+
+passport.use(new LocalStrategy(async (username, password, done) => {
+    try {
+        const result = await pool.query(
+            "SELECT * FROM users WHERE username = $1",
+            [username]
+        );
+
+        if (result.rowCount === 0) {
+            return done(null, false, { message: 'Wrong username.' });
+        }
+
+        const user = result.rows[0];
+        const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+
+        if (user.password !== passwordHash) {
+            return done(null, false, { message: 'Wrong password.' });
+        }
+
+        return done(null, user);
+    } catch (err) {
+        return done(err);
+    }
+}));
+
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const result = await pool.query(
+            "SELECT id, username, avatarurl FROM users WHERE id = $1",
+            [id]
+        );
+
+        if (result.rowCount === 0) {
+            return done(new Error('Felhasználó nem található.'));
+        }
+
+        const user = result.rows[0];
+        done(null, user);
+    } catch (err) {
+        done(err);
+    }
+});
+
 
 let items = [];
 
+function isAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) return next();
+    res.redirect('/login');
+}
+
 
 app.get("/", isAuthenticated, async (req, res) => {
-    let listItems = await getNotes(req.session.user.id);
+    let listItems = await getNotes(req.user.id);
     const query = {
         q: req.query.q || '',
         filter: req.query.filter || 'all'
     };
 
-    let filteredItems = listItems; // vagy az adatbázisból lekérdezve
+    let filteredItems = listItems; 
 
     if (query.q) {
         filteredItems = filteredItems.filter(item =>
@@ -59,10 +116,10 @@ app.get("/", isAuthenticated, async (req, res) => {
     }
 
     res.render("index.ejs", {
-        listTitle: "Today", // vagy amit használsz
+        listTitle: "Today", 
         listItems: filteredItems,
-        user: req.session.user, // ha van
-        query // <-- EZ HIÁNYZOTT
+        user: req.user, 
+        query 
     });
 });
 
@@ -78,7 +135,7 @@ app.post("/add", isAuthenticated, async (req, res) => {
     try {
         await pool.query(
             'INSERT INTO items (title, user_id) VALUES ($1, $2)',
-            [title, req.session.user.id]
+            [title, req.user.id]
         );
         return res.redirect("/"); // Itt is return
     } catch (error) {
@@ -125,7 +182,7 @@ app.post("/delete", isAuthenticated, async (req, res) => {
 
     try {
         const result = await pool.query(
-            'DELETE FROM items WHERE id = $1 and user_id = $2 RETURNING *', [id, req.session.user.id]
+            'DELETE FROM items WHERE id = $1 and user_id = $2 RETURNING *', [id, req.user.id]
         );
 
         if (result.rowCount === 0) {
@@ -147,7 +204,7 @@ app.post("/complete", isAuthenticated, async (req, res) => {
     try {
         const result = await pool.query(
             'UPDATE items SET done = $1 WHERE id = $2 and user_id = $3 RETURNING *',
-            [done ? 0 : 1, id, req.session.user.id]
+            [done ? 0 : 1, id, req.user.id]
         );
 
         if (result.rowCount === 0) {
@@ -163,72 +220,41 @@ app.post("/complete", isAuthenticated, async (req, res) => {
 
 
 app.get("/login", async (req, res) => {
-    if (req.session.user) res.redirect('/');
+    if (req.user) res.redirect('/');
     else res.render("login.ejs")
 });
 
-app.post("/login", async (req, res) => {
-    if (req.session.user) {
-        req.body.user = undefined;
-    }
-    const username = req.body.username;
-    const password = req.body.password;
-    const rememberMe = req.body.remember_me === "on";
+app.post('/login', (req, res, next) => {
+    passport.authenticate('local', (err, user, info) => {
+        if (err) return next(err);
+        if (!user) return res.render('login.ejs', { error: info.message });
 
+        req.logIn(user, (err) => {
+            if (err) return next(err);
 
-    const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
-
-    try {
-        const result = await pool.query(
-            "SELECT * FROM users WHERE username = $1 AND password = $2",
-            [username, passwordHash]
-        );
-
-        if (result.rowCount === 1) {
-            console.log("✅ Sikeres bejelentkezés:", username);
-
-            req.session.user = {
-                username: username,
-                id: result.rows[0].id,
-                avatarURL: result.rows[0].avatarURL || "/assets/icons/avatar.png"
-            };
-
-            console.log(req.session.user);
-
-            if (rememberMe) {
-                req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 7;
+            if (req.body.remember_me === 'on') {
+                req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 7; // 7 nap
             } else {
                 req.session.cookie.expires = false;
             }
 
-            res.redirect("/");
-
-        } else {
-            console.warn("❌ Hibás bejelentkezési adatok");
-            res.render("login.ejs", {
-                error: "Invalid username or password."
-            });
-        }
-    } catch (err) {
-        console.error("❌ Hiba a bejelentkezés során:", err.stack);
-        res.render("login.ejs", {
-            error: "An error occurred during login."
+            return res.redirect('/');
         });
-    }
+    })(req, res, next);
 });
 
-app.get("/logout", (req, res) => {
-    req.session.destroy(err => {
-        if (err) {
-            console.error("❌ Hiba kijelentkezéskor:", err);
-        }
-        res.redirect("/login");
+
+
+app.get('/logout', (req, res, next) => {
+    req.logout((err) => {
+        if (err) return next(err);
+        res.redirect('/login');
     });
 });
 
 
 app.get("/register", async (req, res) => {
-    if (req.session.user) res.redirect('/');
+    if (req.user) res.redirect('/');
     else res.render("register.ejs")
 });
 
@@ -270,10 +296,6 @@ app.post("/register", async (req, res) => {
 });
 
 
-function isAuthenticated(req, res, next) {
-    if (req.session.user) next();
-    else res.redirect("/login");
-}
 
 async function getNotes(user_id) {
     console.log("getting notes of ", user_id);
@@ -315,7 +337,7 @@ app.post("/api/edit", isAuthenticated, async (req, res) => {
     try {
         const result = await pool.query(
             "UPDATE items SET title = $1 WHERE id = $2 AND user_id = $3 RETURNING *",
-            [title, id, req.session.user.id]
+            [title, id, req.user.id]
         );
 
         if (result.rowCount === 0) {
@@ -327,7 +349,7 @@ app.post("/api/edit", isAuthenticated, async (req, res) => {
         res.json({
             success: true,
             updated: result.rows[0],
-            items: await getNotes(req.session.user.id)
+            items: await getNotes(req.user.id)
         });
     } catch (err) {
         console.error("Edit error:", err);
@@ -340,7 +362,7 @@ app.post("/api/edit", isAuthenticated, async (req, res) => {
 
 app.post("/api/search", isAuthenticated, async (req, res) => {
     try {
-        const items = await getNotes(req.session.user.id);
+        const items = await getNotes(req.user.id);
         const q = req.query.q?.toLowerCase() || req.body.q || "";
         const filter = req.query.filter || req.body.filter || "all";
 
@@ -384,7 +406,7 @@ app.post("/api/complete", isAuthenticated, async (req, res) => {
     try {
         const result = await pool.query(
             'UPDATE items SET done = $1 WHERE id = $2 AND user_id = $3 RETURNING *',
-            [done ? 0 : 1, id, req.session.user.id] // toggle
+            [done ? 0 : 1, id, req.user.id] // toggle
         );
 
         if (result.rowCount === 0) {
@@ -397,7 +419,7 @@ app.post("/api/complete", isAuthenticated, async (req, res) => {
         res.json({
             success: true,
             updated: result.rows[0],
-            items: await getNotes(req.session.user.id)
+            items: await getNotes(req.user.id)
         });
         
     } catch (error) {
@@ -421,7 +443,7 @@ app.post("/api/delete", isAuthenticated, async (req, res) => {
     }
 
     try {
-        const result = await pool.query('DELETE FROM items WHERE id = $1 and user_id = $2 RETURNING *', [id, req.session.user.id]);
+        const result = await pool.query('DELETE FROM items WHERE id = $1 and user_id = $2 RETURNING *', [id, req.user.id]);
 
         if (result) {
             res.json({
@@ -441,8 +463,6 @@ app.post("/api/delete", isAuthenticated, async (req, res) => {
         });
     }
 });
-
-
 
 
 app.listen(port, () => {
