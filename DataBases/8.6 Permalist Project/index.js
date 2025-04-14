@@ -277,7 +277,7 @@ function isAuthenticated(req, res, next) {
 
 async function getNotes(user_id) {
     console.log("getting notes of ", user_id);
-    let result = await pool.query("SELECT id, title, done FROM items WHERE items.user_id = $1", [user_id]);
+    let result = await pool.query("SELECT id, title, done FROM items WHERE items.user_id = $1 ORDER BY title asc", [user_id]);
 
     console.log(result.rows);
 
@@ -356,6 +356,7 @@ app.post("/api/search", isAuthenticated, async (req, res) => {
             filtered = filtered.filter(item => !item.done);
         }
 
+
         res.json({
             success: true,
             items: filtered
@@ -392,11 +393,13 @@ app.post("/api/complete", isAuthenticated, async (req, res) => {
             });
         }
 
+        console.log(id, " UPDATED to DONE ");
         res.json({
             success: true,
             updated: result.rows[0],
             items: await getNotes(req.session.user.id)
         });
+        
     } catch (error) {
         console.error('Error updating item:', error);
         res.status(500).json({

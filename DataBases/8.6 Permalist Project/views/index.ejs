@@ -46,38 +46,10 @@
 
 
   <!-- Scrollable List -->
-  <div class=" list-container flex-grow-1 mt-3 overflow-auto px-3 py-2" id="todo-list">
+  <div class=" list-container flex-grow-1 mt-3 overflow-auto px-3 py-2" id="todo-list" >
     <% if (listItems.length === 0) { %>
       <p class="text-center text-secondary">You are all caught up.</p>
-    <% } else { %>
-      <% for(let item of listItems) { %>
-        <div id="item<%= item.id %>" class="item d-flex align-items-center justify-content-between border-bottom py-2">
-          
-          <form action="/complete" method="post">
-            <input type="checkbox" <%= item.done ? 'checked' : '' %>  onchange="toggleComplete(<%= item.id %>, <%= item.done ? 1 : 0 %>)">
-          </form>
-
-          <p id="title<%=item.id%>" class="flex-grow-1 mx-2 mb-0 <%= item.done ? 'completed' : '' %>">
-            <%= item.title %> 
-          </p>
-
-          <form class="edit edit-form"  data-id="<%= item.id %>">
-            <input type="hidden" name="updatedItemId" value="<%= item.id %>">
-            <div class="d-flex flex-row align-items-center justify-content-between">
-              <div class="p-10">
-                <input id="input<%=item.id%>" type="text" required name="updatedItemTitle" value="<%= item.title %>" autocomplete="off" hidden>
-              </div>
-              <div class="p-2">
-                <button id="done<%=item.id%>" class="btn btn-success btn-sm text-light" type="submit" hidden> Done </button>
-              </div>
-            </div>      
-          </form>
-
-          <button id="edit<%=item.id%>" class="btn btn-warning btn-sm me-2" onclick="handler(<%= item.id %>)"> ✏️</button>
-          <button type="button" id="delete<%=item.id%>" class="btn btn-danger btn-sm" onclick="deleteItem('<%= item.id %>')">🗑️ </button>
-
-        </div>
-      <% } %>
+    
     <% } %>
   </div>
 
@@ -90,6 +62,12 @@
   </div>
 
   <script>
+    const listItems = <%- JSON.stringify(listItems) %>;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderTodoList(listItems);
+    });
+
     function handler(id) {
       document.getElementById("title" + id).hidden = true;
       document.getElementById("input" + id).hidden = false;
@@ -97,11 +75,9 @@
       document.getElementById("edit" + id).hidden = true;
     }
 
-    document.querySelectorAll('.edit-form').forEach(form => {
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
+    async function edit(id){
 
-      const itemId = this.dataset.id;
+      const itemId = id;
       const input = document.getElementById("input" + itemId);
       const newTitle = input.value;
 
@@ -123,21 +99,15 @@
         const data = await res.json();
 
         if (data.success) {
-          document.getElementById("title" + itemId).textContent = newTitle;
-          document.getElementById("title" + itemId).hidden = false;
-          input.hidden = true;
-          document.getElementById("done" + itemId).hidden = true;
-          document.getElementById("edit" + itemId).hidden = false;
+          renderTodoList(data.items);
         } else {
           alert("Sikertelen szerkesztés!");
         }
       } catch (err) {
         console.error('Szerkesztési hiba:', err);
       }
-    });
-  });
 
-
+    }
 
   async function deleteItem(id) {
     try {
@@ -155,23 +125,35 @@
       const data = await res.json();
 
       if (data.success) {
-        // Elem eltávolítása a DOM-ból:
         const itemDiv = document.getElementById("item" + id);
-        if (itemDiv) itemDiv.remove();
+        if (itemDiv) {
+          itemDiv.classList.add("fade-out");
+          setTimeout(() => {
+            itemDiv.remove();
 
-        // Ha minden elem törölve lett, kiírjuk az üzenetet:
-        if (document.querySelectorAll(".item").length === 0) {
-          document.querySelector(".list-container").innerHTML = `
-            <p class="text-center text-secondary">You are all caught up.</p>
-          `;
+            // Üzenet megjelenítése, ha üres a lista
+            if (document.querySelectorAll(".item").length === 0) {
+              document.querySelector(".list-container").innerHTML = `
+                <p class="text-center text-secondary">You are all caught up.</p>
+              `;
+            }
+          }, 400); // időzítés az animáció hosszával egyezzen
         }
-      } else {
+      } 
+      else {
         alert('Nem sikerült törölni!');
       }
     } catch (err) {
       console.error('Törlési hiba:', err);
     }
 }
+
+document.getElementById("searchText").addEventListener("keypress", function (e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    search();
+  }
+});
 
 async function search() {
   var q = document.getElementById("searchText").value;
@@ -195,6 +177,7 @@ async function search() {
       if (data.success) {
         console.log("res: ", data.items)
         renderTodoList(data.items);
+        
       } else {
         alert('Nem sikerült keresni!');
       }
@@ -215,31 +198,42 @@ async function search() {
 
 function renderTodoList(items) {
   const list = document.getElementById("todo-list");
-  list.innerHTML = ""; // Töröljük a meglévő listát
+  list.innerHTML = ""; 
 
+  if(items.length == 0){
+    list.innerHTML = " <p class='text-center text-secondary'>You are all caught up.</p>";
+    return;
+  }
+    
+  
+  
+  items = items.sort((a, b) => a.title.localeCompare(b.title));
+  
   items.forEach(item => {
     const div = document.createElement("div");
     div.id = `item${item.id}`;
-    div.classList.add("item", "d-flex", "align-items-center", "justify-content-between", "border-bottom", "py-2");
+    div.classList.add("item", "d-flex", "align-items-center", "justify-content-between", "border-bottom", "py-2", "fade-in");
 
     div.innerHTML = `
-      <form action="/complete" method="post">
+      <div>
         <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleComplete(${item.id}, ${item.done ? 1 : 0})">
-      </form>
+      </div>
       <p id="title${item.id}" class="flex-grow-1 mx-2 mb-0 ${item.done ? 'completed' : ''}">
         ${item.title}
       </p>
-      <form class="edit edit-form" data-id="${item.id}">
+      <div class="edit edit-form" data-id="${item.id}">
         <input type="hidden" name="updatedItemId" value="${item.id}">
         <div class="d-flex flex-row align-items-center justify-content-between">
-          <div class="p-10">
-            <input id="input${item.id}" type="text" required name="updatedItemTitle" value="${item.title}" autocomplete="off" hidden>
-          </div>
+        <div class="p-10">
+          <input id="input${item.id}" type="text" required name="updatedItemTitle"
+                value="${item.title}" autocomplete="off" hidden
+                onkeypress="checkEnter(event, ${item.id})">
+        </div>
           <div class="p-2">
-            <button id="done${item.id}" class="btn btn-success btn-sm text-light" type="submit" hidden>Done</button>
+            <button id="done${item.id}" class="btn btn-success btn-sm text-light" data-id="${item.id}" onclick="edit(${item.id})" hidden>Done</button>
           </div>
         </div>
-      </form>
+      </div>
       <button id="edit${item.id}" class="btn btn-warning btn-sm me-2" onclick="handler(${item.id})">✏️</button>
       <button type="button" id="delete${item.id}" class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')">🗑️</button>
     `;
@@ -252,16 +246,12 @@ function renderTodoList(items) {
   setupCompleteListeners();
 }
 
-
-function updateSingleItem(item) {
-  const form = document.querySelector(`.complete-form[data-id="${item.id}"]`);
-  if (form) {
-    const checkbox = form.querySelector("input[type='checkbox']");
-    checkbox.checked = item.done;
+function checkEnter(event, id) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    edit(id);
   }
 }
-
-
 
 async function toggleComplete(id, done) {
   try {
@@ -277,8 +267,7 @@ async function toggleComplete(id, done) {
 
     if (res.success) {
       // Ha a teljes lista jön vissza:
-      // renderTodoList(res.items);
-      updateSingleItem(res.updated);
+      renderTodoList(res.items);
     } else {
       console.error("Hiba:", res.error);
     }
@@ -286,7 +275,6 @@ async function toggleComplete(id, done) {
     console.error("API hiba:", err);
   }
 }
-
 
 
 setupCompleteListeners();
