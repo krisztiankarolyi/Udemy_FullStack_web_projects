@@ -304,7 +304,7 @@ await pool.query(`
     notes = EXCLUDED.notes, 
     read_date = EXCLUDED.read_date
 `, [userId, bookId, rating || null, notes || '', read_date || null, isbn || '']);
-  
+  }
       return res.render("addbook.ejs", {message: "Book and review saved successfully!", isEdit: false});
   
     } catch (err) {
