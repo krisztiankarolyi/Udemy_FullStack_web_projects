@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('header') %>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= isEdit ? 'Edit book' : 'Add a new book' %></title>
+</head>
+<body class="bg-light">
+  <% if (locals.message) { %>
+    <div class="alert alert-success ">
+      <%= locals.message %>
+    </div>
+  <% } %>
+  <% if (locals.error) { %>
+    <div class="alert alert-danger ">
+      <%= locals.error %>
+    </div>
+  <% } %>
+  <div class="container py-5">
+    <h1 class="mb-4 text-center"><%= isEdit ? 'Edit book' : 'Add a new Book' %></h1>
+
+    <form action="/saveBook" method="POST" class="card p-4 shadow rounded">
+      <% if (isEdit) { %>
+        <input type="hidden" name="book_id" value="<%= book.id %>">
+    
+        <div class="mb-3">
+          <label for="title" class="form-label">Title</label>
+          <input type="text" disabled class="form-control" id="title" name="title" required value="<%= book.title %>">
+        </div>
+    
+        <div class="mb-3">
+          <label for="author" class="form-label">Author</label>
+          <input type="text" disabled class="form-control" id="author" name="author" value="<%= book.author %>">
+        </div>
+    
+        <div class="mb-3">
+          <label for="isbn" class="form-label">ISBN</label>
+          <input type="text" disabled class="form-control" id="isbn" name="isbn" value="<%= book.isbn %>">
+        </div>
+      <% } else { %>
+        <div class="mb-3">
+          <label for="title" class="form-label">Title</label>
+          <input type="text" class="form-control" id="title" name="title" required value="">
+        </div>
+    
+        <div class="mb-3">
+          <label for="author" class="form-label">Author</label>
+          <input type="text" class="form-control" id="author" name="author" value="">
+        </div>
+    
+        <div class="mb-3">
+          <label for="isbn" class="form-label">ISBN</label>
+          <input type="text" class="form-control" id="isbn" name="isbn" value="">
+        </div>
+      <% } %>
+     
+
+      <div class="mb-3">
+        <label for="rating" class="form-label">Rating (1-10)</label>
+        <input type="number" class="form-control" id="rating" name="rating" min="1" max="10" value="<%= isEdit && book.rating ? book.rating : '' %>">
+      </div>
+
+      <div class="mb-3">
+        <label for="read_date" class="form-label">When did you finish reading?</label>
+        <input type="date" class="form-control" id="read_date" name="read_date" value="<%= isEdit && book.read_date ? book.read_date.toISOString().split('T')[0] : '' %>">
+      </div>
+
+      <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <textarea class="form-control" id="notes" name="notes" rows="4"><%= isEdit && book.notes ? book.notes : '' %></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">
+        <%= isEdit ? 'Mentés' : 'Könyv hozzáadása' %>
+      </button>
+    </form>
+
+    <div class="text-center mt-3">
+      <a href="/myBooks" class="text-muted">&larr; Back to my books</a>
+    </div>
+  </div>
+
+
+
+</body>
+</html>

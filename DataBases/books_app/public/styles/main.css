@@ -1,0 +1,16 @@
+.tooltip-inner {
+    max-width: 350px; /* vagy bármilyen kívánt érték */
+  }
+
+  .star {
+    color: gold;
+    font-size: 1.2rem;
+  }
+
+  .username{
+    margin-right: 25px;
+}
+
+  @media screen and (min-width: 801px) {
+   
+  }

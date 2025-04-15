@@ -29,6 +29,9 @@ app.use(express.static("public"));
 app.set('trust proxy', true);
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.set('view engine', 'ejs');
 
 const pool = new pg.Pool({
     user: process.env.PGUSER,
@@ -65,7 +68,7 @@ passport.use(new LocalStrategy(async (username, password, done) => {
 passport.serializeUser((user, done) => {
     done(null, user.id);
 });
-
+ 
 passport.deserializeUser(async (id, done) => {
     try {
         const result = await pool.query(

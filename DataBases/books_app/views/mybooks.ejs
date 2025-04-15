@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Books | list </title>
+
+</head>
+<%- include('header') %>
+
+<body class="bg-light">
+  <div class="container py-4">
+    <h1 class="mb-4 text-center">📚 My books</h1>
+    <% if (locals.message) { %>
+      <div class="alert alert-warning ">
+        <%= locals.message %>
+      </div>
+    <% } %>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered align-middle text-center">
+        <thead class="table-dark">
+          <tr>
+            <th>Cover</th>
+            <th>Author</th>
+            <th>Title</th>
+            <th>ISBN</th>
+            <th>Read</th>
+            <th>Review</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% books.forEach(book => { %>
+            <tr>
+              <td><img src="https://covers.openlibrary.org/b/isbn/<%= book.isbn%>-S.jpg?default=false" /></td>
+              <td><%= book.author %></td>
+              <td><a href="/book/<%= book.isbn %>"><%= book.title %></a></td>
+              <td><%= book.isbn || "-" %></td>
+              <td><%= book.read_date ? new Date(book.read_date).toLocaleDateString() : "-" %></td>
+              <td>
+                <% for(let i = 1; i <= parseInt(book.starCount); i++) { %>
+                    <span class="star" data-bs-toggle="tooltip" data-bs-placement="top" title="<%= book.notes %>"> ★ </span>
+                <% } %>
+                <span><%= book.rating %> /10 </span>
+            <div class="mt-1">
+             <a href="/edit/<%= book.id %>" class="text-decoration-none small">✏️ edit</a>
+            </div>
+              </td>           
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="/newBook" class="btn btn-primary">+ New book</a>
+    </div>
+  </div>
+
+
+</body>
+</html>

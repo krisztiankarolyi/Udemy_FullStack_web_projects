@@ -1,0 +1,33 @@
+<!-- header.ejs -->
+<link rel="stylesheet" href="/styles/main.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap Bundle JS (tartalmazza a Popper.js-t) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<nav class="navbar navbar-expand-lg navbar-dark text-light bg-dark mb-2 sticky-top" style="width: 100%;">
+    <div class="container-fluid">
+      <a class="navbar-brand bg-light text-dark p-1" href="/">Book App</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Navigáció váltása">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/mybooks">My Books</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/newbook">New Book</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/logout">Logout</a>
+          </li>
+        </ul>
+        <span class="navbar-text d-flex align-items-center">
+            <span class="username"> Welcome,&nbsp; <strong><%= currentUser.username %></strong>!</span>
+          <img src="/images/avatar.png" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
+       
+        </span>
+      </div>
+    </div>
+  </nav>
