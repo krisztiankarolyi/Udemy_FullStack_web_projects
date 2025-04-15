@@ -294,13 +294,16 @@ app.get("/mybooks", isAuthenticated, async (req, res) => {
         }
   
         // 2. Kapcsolat létrehozása a user és a könyv között, vélemény és értékelés beszúrása
-        await pool.query(`
-          INSERT INTO user_books (user_id, book_id, rating, notes, read_date, book_isbn)
-          VALUES ($1, $2, $3, $4, $5, $6)
-          ON CONFLICT (user_id, book_id)
-          DO UPDATE SET rating = EXCLUDED.rating, notes = EXCLUDED.notes, read_date = EXCLUDED.read_date
-        `, [userId, bookId, rating || null, notes || '', read_date || null], isbn || '');
-      }
+await pool.query(`
+  INSERT INTO user_books 
+  (user_id, book_id, rating, notes, read_date, book_isbn)
+  VALUES ($1, $2, $3, $4, $5, $6)
+  ON CONFLICT (user_id, book_id)
+  DO UPDATE SET 
+    rating = EXCLUDED.rating, 
+    notes = EXCLUDED.notes, 
+    read_date = EXCLUDED.read_date
+`, [userId, bookId, rating || null, notes || '', read_date || null, isbn || '']);
   
       return res.render("addbook.ejs", {message: "Book and review saved successfully!", isEdit: false});
   
