@@ -3,7 +3,7 @@ I upload here my mini projects made during the Udemy FullStack web developer cou
 
 
 Permaslist: https://permalist-vvkf.onrender.com/
-![image](https://github.com/user-attachments/assets/24fe866d-f8bd-414d-8d73-8666061e3274)
+![image](https://github.com/user-attachments/assets/ae75cefc-f67e-4ce0-9130-9a60ba2d0471)
 
 
 
