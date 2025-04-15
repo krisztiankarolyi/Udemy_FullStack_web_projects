@@ -235,7 +235,7 @@ app.get("/mybooks", isAuthenticated, async (req, res) => {
       // Ha a felhasználónak nincs értékelése, akkor az adatokat ne töltse be
       const isNewReview = !book.rating; // Ha nincs rating, akkor új értékelés
   
-      res.render('addBook', { isEdit: true, book, isNewReview });
+      res.render('addBook.ejs', { isEdit: true, book, isNewReview });
   
     } catch (err) {
       console.error('Hiba a könyv betöltésekor:', err);
@@ -316,7 +316,7 @@ app.get("/mybooks", isAuthenticated, async (req, res) => {
       read_date: ''
     };
   
-    res.render('addBook', { isEdit: false, book: emptyBook });
+    res.render('addBook.ejs', { isEdit: false, book: emptyBook });
   });
   
   app.get('/book/:isbn', isAuthenticated, async (req, res) => {
@@ -330,7 +330,7 @@ app.get("/mybooks", isAuthenticated, async (req, res) => {
     );
   
     const hasRated = result.rowCount > 0;
-    res.render('book', { isbn, hasRated });
+    res.render('book.ejs', { isbn, hasRated });
   });
   
   
