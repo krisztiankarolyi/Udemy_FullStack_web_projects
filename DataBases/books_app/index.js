@@ -7,6 +7,11 @@ import session from "express-session";
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { render } from "ejs";
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const app = express();
