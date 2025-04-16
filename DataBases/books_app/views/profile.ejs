@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= username %>'s Profile</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <%- include('header') %>
+  <div class="container py-4">
+    <h1 class="mb-4"> 
+        <img src="/images/avatar.png" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
+        <%= username %>'s Profile  </h1> <hr>
+    <h2>Books reviewed by  <%= username %></h2>
+    
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered align-middle text-center">
+        <thead class="table-dark">
+          <tr>
+            <th>Cover</th>
+            <th>Title</th>
+            <th>ISBN</th>
+            <th>Your Rating</th>
+            <th>Review</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% books.forEach(book => { %>
+            <tr>
+              <td>
+                <img src="https://covers.openlibrary.org/b/isbn/<%= book.isbn %>-S.jpg?default=false" alt="Book cover">
+              </td>
+              <td>
+                <a href="/book/<%= book.isbn %>"><%= book.title %></a>
+              </td>
+              <td><%= book.isbn || '-' %></td>
+              <td><%= book.user_rating %> /10</td>
+              <td><%= book.user_notes ? book.user_notes : '-' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="mt-4">
+      <a href="/" class="btn btn-secondary">Back to the main page</a>
+    </div>
+  </div>
+  
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

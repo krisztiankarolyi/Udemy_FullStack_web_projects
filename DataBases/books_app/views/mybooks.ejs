@@ -4,47 +4,55 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Books | list </title>
-
 </head>
 <%- include('header') %>
-
 <body class="bg-light">
   <div class="container py-4">
     <h1 class="mb-4 text-center">📚 My books</h1>
     <% if (locals.message) { %>
-      <div class="alert alert-warning ">
+      <div class="alert alert-warning">
         <%= locals.message %>
       </div>
     <% } %>
+    
+    <!-- Kereső mező -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
+      <input type="text" id="searchInput" class="form-control w-100 w-md-auto" placeholder="Search books by ISBN / Title / Author ...">
+    </div>
 
     <div class="table-responsive">
       <table class="table table-hover table-bordered align-middle text-center">
         <thead class="table-dark">
-          <tr>
+          <tr>  
             <th>Cover</th>
-            <th>Author</th>
-            <th>Title</th>
+            <th id="author-header" style="cursor:pointer;">Author ⬍</th>
+            <th id="title-header" style="cursor:pointer;">Title ⬍</th>
             <th>ISBN</th>
             <th>Read</th>
-            <th>Review</th>
+            <th id="review-header" style="cursor:pointer;">Review ⬍</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="bookTableBody">
           <% books.forEach(book => { %>
-            <tr>
-              <td><img src="https://covers.openlibrary.org/b/isbn/<%= book.isbn%>-S.jpg?default=false" /></td>
+            <tr 
+              class="book-row"  
+              data-title="<%= book.title %>"
+              data-author="<%= book.author %>"
+              data-isbn="<%= book.isbn %>"
+              data-rating="<%= book.rating || 0 %>">
+              <td><img src="https://covers.openlibrary.org/b/isbn/<%= book.isbn %>-S.jpg?default=false" /></td>
               <td><%= book.author %></td>
               <td><a href="/book/<%= book.isbn %>"><%= book.title %></a></td>
               <td><%= book.isbn || "-" %></td>
               <td><%= book.read_date ? new Date(book.read_date).toLocaleDateString() : "-" %></td>
               <td>
                 <% for(let i = 1; i <= parseInt(book.starCount); i++) { %>
-                    <span class="star" data-bs-toggle="tooltip" data-bs-placement="top" title="<%= book.notes %>"> ★ </span>
+                  <span class="star" data-bs-toggle="tooltip" data-bs-placement="top" title="<%= book.notes %>"> ★ </span>
                 <% } %>
                 <span><%= book.rating %> /10 </span>
-            <div class="mt-1">
-             <a href="/edit/<%= book.id %>" class="text-decoration-none small">✏️ edit</a>
-            </div>
+                <div class="mt-1">
+                  <a href="/edit/<%= book.id %>" class="text-decoration-none small">✏️ edit</a>
+                </div>
               </td>           
             </tr>
           <% }) %>
@@ -57,6 +65,105 @@
     </div>
   </div>
 
+  <!-- JSON az összes könyv adatával -->
+  <script>
+    const booksData = <%- JSON.stringify(books) %>;
+    // A currentBooks mindig a jelenlegi szűrt/rendezett állapotot tartalmazza.
+    let currentBooks = [...booksData];
+  </script>
 
+  <script>
+    let sortAscTitle = true;
+    let sortAscRating = true;
+    let sortAscAuthor = true;
+
+    const tbody = document.getElementById('bookTableBody');
+    const titleHeader = document.getElementById('title-header');
+    const reviewHeader = document.getElementById('review-header');
+    const authorHeader = document.getElementById('author-header');
+    const searchInput = document.getElementById("searchInput");
+
+    // Renderelési függvény
+    function renderBooks(books) {
+      tbody.innerHTML = books.map(book => `
+        <tr 
+          class="book-row"
+          data-title="${book.title}"
+          data-author="${book.author}"
+          data-isbn="${book.isbn}"
+          data-rating="${book.rating}">
+          <td><img src="https://covers.openlibrary.org/b/isbn/${book.isbn}-S.jpg?default=false" /></td>
+          <td>${book.author}</td>
+          <td><a href="/book/${book.isbn}">${book.title}</a></td>
+          <td>${book.isbn || "-"}</td>
+          <td>${book.read_date ? new Date(book.read_date).toLocaleDateString() : "-"}</td>
+          <td>
+            ${'★'.repeat(parseInt(book.starCount || 0)).split('').map(() => `
+              <span class="star" data-bs-toggle="tooltip" title="${book.notes}"> ★ </span>
+            `).join('')}
+            <span>${book.rating} /10 </span>
+            <div class="mt-1">
+              <a href="/edit/${book.id}" class="text-decoration-none small">✏️ edit</a>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      // Bootstrap tooltip-ok újrainicializálása, ha szükséges
+      if (typeof bootstrap !== 'undefined') {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+      }
+    }
+
+    // Szűrési függvény: a booksData alapján kiszűri a keresési feltételeknek megfelelő könyveket
+    function applySearchFilter() {
+      const query = searchInput.value.toLowerCase();
+      // booksData-hoz viszonyítva
+      currentBooks = booksData.filter(book =>
+        book.title.toLowerCase().includes(query) ||
+        book.author.toLowerCase().includes(query) ||
+        book.isbn.toLowerCase().includes(query)
+      );
+    }
+
+    // Esemény a kereső mezőhöz: mindig szűri a booksData-t, majd rendereli a jelenlegi rendezési sorrend szerint.
+    searchInput.addEventListener("input", () => {
+      applySearchFilter();
+      renderBooks(currentBooks);
+    });
+
+    // Rendezés title szerint (a currentBooks tömbön, így a szűrés érvényben marad)
+    titleHeader.addEventListener('click', () => {
+      currentBooks.sort((a, b) =>
+        sortAscTitle
+          ? a.title.localeCompare(b.title)
+          : b.title.localeCompare(a.title)
+      );
+      sortAscTitle = !sortAscTitle;
+      titleHeader.innerText = `Title ${sortAscTitle ? '⬇️' : '⬆️'}`;
+      renderBooks(currentBooks);
+    });
+
+    // Rendezés rating szerint
+    reviewHeader.addEventListener('click', () => {
+      currentBooks.sort((a, b) =>
+        sortAscRating ? a.rating - b.rating : b.rating - a.rating
+      );
+      sortAscRating = !sortAscRating;
+      reviewHeader.innerText = `Review ${sortAscRating ? '⬇️' : '⬆️'}`;
+      renderBooks(currentBooks);
+    });
+
+    // Rendezés szerző (author) szerint
+    authorHeader.addEventListener('click', () => {
+      currentBooks.sort((a, b) =>
+        sortAscAuthor ? a.author.localeCompare(b.author) : b.author.localeCompare(a.author)
+      );
+      sortAscAuthor = !sortAscAuthor;
+      authorHeader.innerText = `Author ${sortAscAuthor ? '⬇️' : '⬆️'}`;
+      renderBooks(currentBooks);
+    });
+  </script>
 </body>
 </html>

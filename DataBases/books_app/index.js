@@ -9,6 +9,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import { render } from "ejs";
 import { fileURLToPath } from 'url';
 import path from 'path';
+import Isbn from "node-isbn";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -180,17 +181,59 @@ app.post("/register", async (req, res) => {
 });
 
 
+app.get('/profile/:username', isAuthenticated, async (req, res) => {
+  const username = req.params.username;
+  if (!username) {
+    return res.status(400).send("A 'username' paraméter kötelező.");
+  }
+  
+  try {
+    // A felhasználó által értékelt könyvek lekérése
+    const result = await pool.query(`
+      SELECT b.*, ub.rating AS user_rating, ub.notes AS user_notes
+      FROM books b
+      JOIN user_books ub ON ub.book_id = b.id
+      JOIN users u ON u.id = ub.user_id
+      WHERE u.username = $1
+    `, [username]);
+    
+    const books = result.rows;
+    res.render('profile', { username, books });
+  } catch (err) {
+    console.error('Error fetching user profile:', err);
+    res.status(500).send("Internal server error");
+  }
+});
 
 
 // Main page: user-specific book entries
 app.get('/', isAuthenticated, async (req, res) => {
+  try {
+    // Az összes könyv lekérdezése
+    const result = await pool.query(`SELECT b.* FROM books b`);
+    const books = result.rows;
 
-  const result = await pool.query(`
-    SELECT b.*
-    FROM books b`);
+    // Minden könyvhöz kiszámoljuk az átlagos értékelést
+    // Alternatívaként egy JOIN-s aggregáló lekérdezés is megoldhatja, de itt egyszerűbb ciklussal példázunk.
+    for (let book of books) {
+      const ratingQuery = await pool.query(
+        `SELECT rating FROM user_books WHERE book_id = $1`,
+        [book.id]
+      );
+      const ratings = ratingQuery.rows;
 
-  res.render('index', { books: result.rows });
+      book.avg_rating = ratings.length > 0
+        ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1)
+        : null;
+    }
+
+    res.render('index', { books });
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    res.status(500).send("Internal server error");
+  }
 });
+
 
 app.get("/mybooks", isAuthenticated, async (req, res) => {
     try {
@@ -250,68 +293,108 @@ app.get("/mybooks", isAuthenticated, async (req, res) => {
   });
 
   
-  app.post('/saveBook', isAuthenticated, async (req, res) => {
-    const {
-      book_id,
-      title,
-      author,
-      isbn,
-      rating,
-      notes,
-      read_date
-    } = req.body;
-  
-    const userId = req.user.id;
-  
-    try {
-      let bookId = book_id;
-  
-      if (bookId) {
-        // 📘 Könyv és vélemény frissítése
-        await pool.query(`
-          UPDATE user_books
-          SET rating = $1, notes = $2, read_date = $3
-          WHERE user_id = $4 AND book_id = $5
-        `, [rating || null, notes, read_date || null, userId, bookId]);
-  
-      } else {
-        // 📘 Új könyv hozzáadása
-        // 1. Először megnézzük, létezik-e már ez az ISBN
-        const existingBook = await pool.query(
-          "SELECT id FROM books WHERE isbn = $1",
-          [isbn]
-        );
-  
-        if (existingBook.rowCount > 0) {
-          bookId = existingBook.rows[0].id;
-        } else {
-          // Ha nincs, új könyvet hozunk létre
-          const result = await pool.query(
-            "INSERT INTO books (title, author, isbn) VALUES ($1, $2, $3) RETURNING id",
-            [title, author, isbn]
-          );
-          bookId = result.rows[0].id;
+  // Ha szükséges, importáld a fetch-et
+// const fetch = require('node-fetch');
+
+app.post('/saveBook', isAuthenticated, async (req, res) => {
+  const {
+    book_id,        // Lehet, hogy már létezik
+    isbn,
+    rating,
+    notes,
+    read_date
+  } = req.body;
+
+  const userId = req.user.id;
+
+  try {
+    // 1. ISBN ellenőrzése a node könyvtár segítségével (például Isbn.resolve)
+    // A resolved book tartalmazza a könyv adatokat, például: title, authors, stb.
+    const resolvedBook = await new Promise((resolve, reject) => {
+      Isbn.resolve(isbn, function (err, book) {
+        if (err) {
+          console.log('Book not found', err);
+          return reject(err);
         }
-  
-        // 2. Kapcsolat létrehozása a user és a könyv között, vélemény és értékelés beszúrása
-await pool.query(`
-  INSERT INTO user_books 
-  (user_id, book_id, rating, notes, read_date, book_isbn)
-  VALUES ($1, $2, $3, $4, $5, $6)
-  ON CONFLICT (user_id, book_id)
-  DO UPDATE SET 
-    rating = EXCLUDED.rating, 
-    notes = EXCLUDED.notes, 
-    read_date = EXCLUDED.read_date
-`, [userId, bookId, rating || null, notes || '', read_date || null, isbn || '']);
-  }
-      return res.render("addbook.ejs", {message: "Book and review saved successfully!", isEdit: false});
-  
-    } catch (err) {
-      console.error('Hiba a könyv mentésekor:', err);
-      res.status(500).send("Hiba történt a könyv mentésekor.");
+        console.log('Book found %j', book);
+        resolve(book);
+      });
+    }).catch(err => {
+      return res.render("addbook.ejs", {
+        error: "Book not found by isbn!",
+        isEdit: false
+      });
+    });
+    
+    // Ha nincs resolvedBook, akkor már volt render (return)
+    if (!resolvedBook) return;
+
+    // Felülírhatod a beküldött adatokat a resolved adatokkal
+    // Például, ha a resolved book tartalmaz title-t és authors-t:
+    const resolvedTitle = resolvedBook.title || "unknown";
+    // Az authors tömbből sztringet készítünk (vesszővel elválasztva)
+    const resolvedAuthor = (resolvedBook.authors && resolvedBook.authors.length > 0)
+      ? resolvedBook.authors.join(', ')
+      : "unknown";
+
+    // 2. Könyv mentése vagy frissítése (csak akkor folytatjuk, ha az ISBN ellenőrzés sikeres volt)
+    let bookId = book_id;
+
+    if (bookId) {
+      // Frissítés: már létező könyv esetén csak a user_books tábla frissítése
+      await pool.query(
+        `UPDATE user_books
+         SET rating = $1, notes = $2, read_date = $3
+         WHERE user_id = $4 AND book_id = $5`,
+        [rating || null, notes, read_date || null, userId, bookId]
+      );
+    } else {
+      // Új könyv hozzáadása
+      // 2.1 Először megnézzük, létezik-e már ez az ISBN a books táblában
+      const existingBook = await pool.query(
+        "SELECT id FROM books WHERE isbn = $1",
+        [isbn]
+      );
+
+      if (existingBook.rowCount > 0) {
+        bookId = existingBook.rows[0].id;
+      } else {
+        // Ha nincs, új könyvet hozunk létre a resolved adatokkal
+        const result = await pool.query(
+          "INSERT INTO books (title, author, isbn) VALUES ($1, $2, $3) RETURNING id",
+          [resolvedTitle, resolvedAuthor, isbn]
+        );
+        bookId = result.rows[0].id;
+      }
+
+      // 2.2 Kapcsolat létrehozása a user és a könyv között (user_books tábla)
+      await pool.query(
+        `INSERT INTO user_books 
+         (user_id, book_id, rating, notes, read_date, book_isbn)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (user_id, book_id)
+         DO UPDATE SET 
+            rating = EXCLUDED.rating, 
+            notes = EXCLUDED.notes, 
+            read_date = EXCLUDED.read_date`,
+        [userId, bookId, rating || null, notes || '', read_date || null, isbn || '']
+      );
     }
+
+    return res.render("addbook.ejs", {
+      message: "Book and review saved successfully!",
+      isEdit: false
+    });
+  } catch (err) {
+    console.error('Hiba a könyv mentésekor:', err);
+    return res.render("addbook.ejs", {
+      error: "An error occurred while saving the book review!",
+      isEdit: false
+    });
+  }
 });
+
+
 
 
   app.get('/newBook', isAuthenticated, (req, res) => {
@@ -361,7 +444,7 @@ await pool.query(`
   
       book.coverURL = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
     
-      // Avg rating + read_by list + reviews
+      // b rating + read_by list + reviews
       const ratingQuery = await pool.query(
         `SELECT r.rating, r.notes, u.username
          FROM user_books r

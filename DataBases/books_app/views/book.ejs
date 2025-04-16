@@ -2,7 +2,7 @@
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>Könyv részletei</title>
+  <title>Book details</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -41,12 +41,12 @@
                 <h2 id="title" class="card-title"></h2>
                 <p id="author" class="card-text text-muted"></p>
                 <p><strong>ISBN:</strong> <span id="isbn"></span></p>
-                <p><strong>Átlagos értékelés:</strong> <span id="rating"></span></p>
+                <p><strong>Average rating:</strong> <span id="rating"></span></p>
 
                 <!-- Form, ha a felhasználó még nem értékelt -->
                 <div id="rating-form-container" class="my-4"></div>
 
-                <h5>Felhasználói értékelések:</h5>
+                <h5>Reviews:</h5>
                 <ul id="reviews" class="list-group"></ul>
               </div>
             </div>
@@ -98,6 +98,7 @@
             const li = document.createElement('li');
             li.classList.add('list-group-item');
 
+            // Avatar létrehozása
             const avatar = document.createElement('img');
             avatar.src = '/images/avatar.png';
             avatar.alt = `${review.user} avatar`;
@@ -105,17 +106,25 @@
             avatar.height = 25;
             avatar.classList.add('me-2');
 
-            const text = document.createElement('span');
-            text.textContent = `${review.user}: ${review.rating}/10 - ${review.note}`;
+            // Felhasználónév linkként
+            const userLink = document.createElement('a');
+            userLink.href = `/profile/${review.user}`;
+            userLink.textContent = review.user;
+            userLink.classList.add('fw-bold'); // opcionális: kiemeléshez
+            
+            // Szöveg létrehozása az értékeléshez és hozzászóláshoz
+            const ratingText = document.createTextNode(`: ${review.rating}/10 - ${review.note}`);
 
+            // Elem összeállítása
             li.appendChild(avatar);
-            li.appendChild(text);
+            li.appendChild(userLink);
+            li.appendChild(ratingText);
             reviewsList.appendChild(li);
           });
         } else {
           const li = document.createElement('li');
           li.classList.add('list-group-item');
-          li.textContent = 'Még senki sem értékelte ezt a könyvet.';
+          li.textContent = 'There is no review yet.';
           reviewsList.appendChild(li);
         }
 
@@ -123,17 +132,17 @@
         if (!hasRated) {
           const formContainer = document.getElementById('rating-form-container');
           formContainer.innerHTML = `
-            <h5>Értékeld a könyvet:</h5>
+            <h5>Rate this book:</h5>
             <form id="rating-form">
               <div class="mb-2">
-                <label for="rating" class="form-label">Pontszám (1-10)</label>
+                <label for="rating" class="form-label">Points (1-10)</label>
                 <input type="number" id="rating-input" name="rating" min="1" max="10" class="form-control" required>
               </div>
               <div class="mb-2">
-                <label for="note" class="form-label">Megjegyzés</label>
+                <label for="note" class="form-label">Comment</label>
                 <textarea id="note-input" name="note" rows="2" class="form-control" required></textarea>
               </div>
-              <button type="submit" class="btn btn-primary">Értékelés mentése</button>
+              <button type="submit" class="btn btn-primary">Submit review</button>
             </form>
           `;
 
