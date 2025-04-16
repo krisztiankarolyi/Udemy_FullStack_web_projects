@@ -2,6 +2,12 @@
 I upload here my mini projects made during the Udemy FullStack web developer course.  (https://www.udemy.com/share/101qYw3@ty8g8At8Q5JU-5ULxocoRHTyeBr0-vYcbJVXwMipfQuX2xtVHhB4pOISxbbKSqSu/)
 
 
+Book rating webapp: 
+https://udemy-fullstack-web-projects-2872.onrender.com/
+![image](https://github.com/user-attachments/assets/6688c2a7-1039-45a1-b609-6816382b846a)
+
+
+
 Permaslist: https://permalist-vvkf.onrender.com/
 ![image](https://github.com/user-attachments/assets/ae75cefc-f67e-4ce0-9130-9a60ba2d0471)
 
