@@ -10,6 +10,8 @@
 # Font & Color Variables
 # Help: https://bootstrapmade.com/color-system/
 --------------------------------------------------------------*/
+
+
 /* Fonts */
 :root {
   --default-font: "Roboto",  system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -656,6 +658,33 @@ section,
   width: 100%;
 }
 
+
+.res-flex-row {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* vagy amennyi rést szeretnél */
+}
+
+.res-flex-item {
+  flex: 1;
+  padding: 10px 5px;
+}
+
+.res-flex-item img{
+  height: auto;
+  width: 80%;
+}
+
+@media (max-width: 800px) {
+  .res-flex-row {
+    flex-direction: column;
+  }
+}
+
+p{ text-align: justify;}
+
 .stats .stats-item i {
   color: var(--accent-color);
   display: block;
@@ -1272,4 +1301,18 @@ section,
 --------------------------------------------------------------*/
 .starter-section {
   /* Add your styles here */
+}
+
+.toggle-image {
+  opacity: 0;
+  visibility: hidden;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease, max-height 0.5s ease;
+}
+
+.toggle-image.show {
+  opacity: 1;
+  visibility: visible;
+  max-height: 500px; 
 }

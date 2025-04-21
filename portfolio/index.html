@@ -32,12 +32,11 @@
     <i class="header-toggle d-xl-none bi bi-list"></i>
 
     <div class="profile-img">
-      <img src="assets/img/my-profile-img.jpg" alt="" class="img-fluid rounded-circle">
+      <img  draggable="false"src="assets/img/my-profile-img.jpg" alt="" class="img-fluid rounded-circle">
     </div>
 
     <a href="index.html" class="logo d-flex align-items-center justify-content-center">
-      <!-- Uncomment the line below if you also wish to use an image logo -->
-      <!-- <img src="assets/img/logo.png" alt=""> -->
+      <!-- <img  draggable="false"src="assets/img/logo.png" alt=""> -->
       <h1 class="sitename">Krisztián Károlyi</h1>
     </a>
 
@@ -48,28 +47,10 @@
 
     <nav id="navmenu" class="navmenu">
       <ul>
-        <li><a href="#hero" class="active"><i class="bi bi-house navicon"></i>Home</a></li>
+        <li><a href="#me" class="active"><i class="bi bi-house navicon"></i>Home</a></li>
         <li><a href="#about"><i class="bi bi-person navicon"></i> About &#38; Contact</a></li>
         <li><a href="#resume"><i class="bi bi-file-earmark-text navicon"></i> Resume</a></li>
         <li><a href="#portfolio"><i class="bi bi-images navicon"></i> Portfolio</a></li>
-        <!--
-        <li class="dropdown"><a href="#"><i class="bi bi-menu-button navicon"></i> <span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-          <ul>
-            <li><a href="#">Dropdown 1</a></li>
-            <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-              <ul>
-                <li><a href="#">Deep Dropdown 1</a></li>
-                <li><a href="#">Deep Dropdown 2</a></li>
-                <li><a href="#">Deep Dropdown 3</a></li>
-                <li><a href="#">Deep Dropdown 4</a></li>
-                <li><a href="#">Deep Dropdown 5</a></li>
-              </ul>
-            </li>
-            <li><a href="#">Dropdown 2</a></li>
-            <li><a href="#">Dropdown 3</a></li>
-            <li><a href="#">Dropdown 4</a></li>
-          </ul> 
-        </li>  -->
         <li><a href="#certifications"><i class="bi bi-file-earmark-text navicon"></i> Certifications</a></li>
       </ul>
     </nav>
@@ -78,17 +59,17 @@
 
   <main class="main">
 
-    <!-- Hero Section -->
-    <section id="hero" class="hero section dark-background">
+    <!-- me Section -->
+    <section id="me" class="hero section dark-background">
 
-      <img src="assets/img/hero-bg.jpg" alt="" data-aos="fade-in" class="">
+      <img  draggable="false"src="assets/img/hero-bg.jpg" alt="" data-aos="fade-in" class="">
 
       <div class="container" data-aos="fade-up" data-aos-delay="100">
         <h2>Krisztián Károlyi</h2>
         <p>I'm an entry level <span class="typed" data-typed-items="Fullstack web developer, software developer, Business IT specialist">Software developer</span><span class="typed-cursor typed-cursor--blink" aria-hidden="true"></span><span class="typed-cursor typed-cursor--blink" aria-hidden="true"></span></p>
       </div>
 
-    </section><!-- /Hero Section -->
+    </section><!-- /me Section -->
 
     <!-- About Section -->
     <section id="about" class="about section">
@@ -103,7 +84,7 @@
 
         <div class="row gy-4 justify-content-center">
           <div class="col-lg-4">
-            <img src="assets/img/my-profile-img.jpg" class="img-fluid" alt="">
+            <img  draggable="false"src="assets/img/my-profile-img.jpg" class="img-fluid" alt="">
           </div>
           <div class="col-lg-8 content">
             <h2>Entry level software developer &amp; business IT specialist.</h2>
@@ -305,39 +286,64 @@
       </div><!-- End Section Title -->
 
       <div class="container">
+        <label>
+          <label>
+            <input type="checkbox" id="toggleImagesCheckbox"> Show images
+          </label>
+
         <div class="row">
-          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
-            <h3 class="resume-title">Summary</h3>
-            <div class="resume-item pb-0">
-              <h4>Krisztián Károlyi</h4>
-              <p><em>Recent Business Informatics graduate with a strong foundation in full-stack web development, OOP, databases, and digital literacy. Passionate about learning and teaching programming. Eager to contribute to innovative IT projects and grow as a developer.</em></p>
-              <ul>
-                <li>Târgu Mureș, Romania (from Szombathely, Hungary)</li>
-                <li>+40 747 419 603</li>
-                <li>+36 20 430 5401</li>
-                <li>krisztian.karolyi.2001@gmail.com</li>
-              </ul>
-            </div>
-      
+          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">           
             <h3 class="resume-title">Education</h3>
             <div class="resume-item">
               <h4>BSc in Economic Informatics</h4>
               <h5>2021 - 2024</h5>
-              <p><img src="assets/img/sapientia.png" style="float: left;" width="35px">&nbsp;&nbsp;<em><a href="https://csik.sapientia.ro/hu/felveteli/alapkepzes/gazdasagi-informatika-szak">Sapientia Hungarian University of Transylvania, Miercurea Ciuc</a></em></p>
-              <p>Focused on software development, finance, and business. Studied Java, Python, PHP (Laravel), VBA, Android development, and ABAP for SAP systems. Final project: a Django web app for time series forecasting using neural networks.</p>
+              <p>
+                <img draggable="false"src="assets/img/sapientia.png" style="float: left;" width="35px">&nbsp;&nbsp;<em><a href="https://csik.sapientia.ro/hu/felveteli/alapkepzes/gazdasagi-informatika-szak">Sapientia Hungarian University of Transylvania, Miercurea Ciuc</a></em></p>
+              <p>Focused on software development, finance, and business. Studied Java, Python, PHP (Laravel), VBA, Android development, and ABAP for SAP systems. <br>
+                <a target="_blank" href="assets/img/portfolio/allamvizsga_dolgozat_KK.pdf">Final project: a Django web app for time series forecasting using neural networks.</a>
+              </p>
+              <div class="res-flex-row school">
+                <div class="res-flex-item">
+                  <img class="toggle-image" draggable="false"src="assets/img/tdk.jpg" class="img-fluid" alt=" ">                           
+                </div>
+                <div class="res-flex-item">
+                  <img class="toggle-image"  draggable="false"src="assets/img/mnb2.jpg" class="img-fluid" alt=" ">                           
+                </div>
+              </div>
+            </div>
+
+            <div class="resume-item">
+              <h4>Teacher Training Program (Pedagógiai Modul)</h4>
+              <h5>2021 - 2024</h5>
+              <p>
+                <img  draggable="false" src="assets/img/sapientia.png" style="float: left;" width="35px">&nbsp;&nbsp;
+                <em><a target="_blank" href="https://csik.sapientia.ro/hu/felveteli/tanarkepzes">Sapientia Hungarian University of Transylvania, Miercurea Ciuc</a></em>
+              </p>
+              <p>
+                Completed alongside my BSc studies in Economic Informatics.
+                 Focused on educational psychology, didactics, and pedagogical methodologies.
+                  Gained teaching practice and skills for delivering IT and informatics-related content in a school setting. <br>
+                Delivered 10 lessons to high school students (grades 9–12), teaching MS Office skills through hands-on tasks and original lesson plans
+                <br>
+                <a target="_blank" href="assets/img/portfolio/MIvel tamogatott IKT.pdf">Final paper: AI supported education</a>
+              </p>
             </div>
       
             <div class="resume-item">
               <h4>Vocational Training in Software Development (OKJ)</h4>
               <h5>2020 - 2021</h5>
-              <p><img src="assets/img/ntszki.png" style="float: left;" width="25px">&nbsp;&nbsp;<a href="https://www.ntszki.hu/"> Nádasdy Tamás School, Csepreg, Hungary</em></a></p>
-              <p>Specialized in .NET 5, C#, MsSQL, and PHP with Laravel. Strengthened software engineering skills through real-world projects and teamwork.</p>
+              <p>
+                <img  draggable="false"src="assets/img/ntszki.png" style="float: left;" width="25px">&nbsp;&nbsp;<a href="https://www.ntszki.hu/"> Nádasdy Tamás School, Csepreg, Hungary</em></a></p>
+              <p>Specialized in .NET 5, C#, MsSQL, and PHP with Laravel. Strengthened software engineering skills through real-world projects and teamwork. <br>
+              <a target="_blank" href="assets/img/portfolio/reactgame_dokumentacio.pdf">Final paper: Laravel webapp with JS reaction time minigames </a>
+              </p>
             </div>
       
             <div class="resume-item">
               <h4>Secondary School with IT Profile</h4>
               <h5>2016 - 2020</h5>
-              <p><img src="assets/img/ntszki.png" style="float: left;" width="25px">&nbsp;&nbsp;<a href="https://www.ntszki.hu/"><em>Nádasdy Tamás School, Csepreg, Hungary</em></a></p>
+              <p>
+                <img draggable="false"src="assets/img/ntszki.png" style="float: left;" width="25px">&nbsp;&nbsp;<a href="https://www.ntszki.hu/"><em>Nádasdy Tamás School, Csepreg, Hungary</em></a></p>
               <p>Learned Java, web development (HTML, CSS, JS), MySQL, networking (Cisco), and Linux system administration (Debian). Gained a solid foundation in IT early on.</p>
             </div>
           </div>
@@ -348,23 +354,41 @@
             <div class="resume-item">
               <h4>Coding Instructor</h4>
               <h5>2022 - 2024</h5>
-              <p><img src="assets/img/logiscool.png" style="float: left;" width="25px">&nbsp;&nbsp;<em>Logiscool Ltd., Miercurea Ciuc</em></p>
+              <p><img  draggable="false"src="assets/img/logiscool.png" style="float: left;" width="25px">&nbsp;&nbsp;<em><a target="_blank" href="https://www.logiscool.com/ro/locations/miercurea-ciuc">Logiscool Ltd., Miercurea Ciuc</a></em></p>
               <ul>
                 <li>Taught programming fundamentals and digital skills to children aged 7–14 using a modern curriculum.</li>
                 <li>Developed engaging lessons adapted to different age groups and skill levels.</li>
                 <li>Strengthened core algorithmic and programming concepts through teaching.</li>
+                <div class="res-flex-row">
+                  <div class="res-flex-item">
+                    <img  class="toggle-image" draggable="false"src="assets/img/at_logiscool.png" class="img-fluid" alt=" ">                           
+                  </div>
+                  <div class="res-flex-item">
+                    <img class="toggle-image" draggable="false"src="assets/img/at_school.JPG" class="img-fluid" alt="">
+                  </div>
+                </div>
               </ul>
-            </div>
-      
+           
+                    
+                   
+            
             <div class="resume-item">
               <h4>Cameraman & Video Editor</h4>
               <h5>2024 – Present</h5>
-              <p><img src="assets/img/etv.png" style="float: left;" width="25px">&nbsp;&nbsp;<em>Erdély TV, Târgu Mureș</em></p>
+              <p><img draggable="false"src="assets/img/etv.png" style="float: left;" width="25px">&nbsp;&nbsp;<em><a href="https://www.facebook.com/erdelytv/?locale=hu_HU" target="_blank">Erdély TV, Târgu Mureș </a></em></p>
               <ul>
                 <li>Filming, editing, and post-production of news and magazine shows.</li>
                 <li>Handled live broadcast technical setup and execution.</li>
                 <li>Created video content for daily media coverage and reports.</li>
-                <li>Take a look at my <a href="https://www.youtube.com/playlist?list=PL7z1PYRCOyWQ9Si4SBKSoNODmTLJJjurN">Videos</a></li>
+                <li>Take a look at my <a target="_blank" href="https://www.youtube.com/playlist?list=PL7z1PYRCOyWQ9Si4SBKSoNODmTLJJjurN">Videos</a></li>
+                <div class="res-flex-row">
+                  <div class="res-flex-item">
+                    <img  class="toggle-image"  draggable="false"src="assets/img/at_etv.jpg" class="img-fluid" alt=" ">                           
+                  </div>
+                  <div class="res-flex-item">
+                    <img class="toggle-image"  draggable="false"src="assets/img/at_etv_2.jpg" class="img-fluid" alt=" ">               
+                  </div>
+                </div>
               </ul>
             </div>
           </div>
@@ -390,7 +414,7 @@
 
             <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
               <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-1.png" class="img-fluid" alt="">
+                <img  draggable="false"src="assets/img/portfolio/app-1.png" class="img-fluid" alt="">
                 <div class="portfolio-info">
                   <h4>Book rating webapp</h4>
                   <p>NodeJS/Express/EJS/PostrgreSQL/RestAPI</p>
@@ -403,7 +427,7 @@
 
             <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
               <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-2.png" class="img-fluid" alt="">
+                <img  draggable="false"src="assets/img/portfolio/app-2.png" class="img-fluid" alt="">
                 <div class="portfolio-info">
                   <h4>Permalist webapp</h4>
                   <p>NodeJS/Express/EJS/PostrgreSQL/RestAPI/Ajax</p>
@@ -416,7 +440,7 @@
 
             <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
               <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-3.png" class="img-fluid" alt="">
+                <img  draggable="false"src="assets/img/portfolio/app-3.png" class="img-fluid" alt="">
                 <div class="portfolio-info">
                   <h4>Travel map 1</h4>
                   <p>NodeJS/Express/EJS/PostrgreSQL/RestAPI/Ajax</p>
@@ -429,7 +453,7 @@
 
             <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
               <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-7.png" class="img-fluid" alt="">
+                <img  draggable="false"src="assets/img/portfolio/app-7.png" class="img-fluid" alt="">
                 <div class="portfolio-info">
                   <h4>Tinder for dogs</h4>
                   <p>Bootstrap practice</p>
@@ -443,7 +467,7 @@
 
             <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
               <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-9.png" class="img-fluid" alt="">
+                <img  draggable="false"src="assets/img/portfolio/app-9.png" class="img-fluid" alt="">
                 <div class="portfolio-info">
                   <h4>Time Series Forecast webapp</h4>
                   <p>Django/Python (MLP, ARIMA)</p>
@@ -456,7 +480,7 @@
 
             <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
               <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-10.png" class="img-fluid" alt="">
+                <img  draggable="false"src="assets/img/portfolio/app-10.png" class="img-fluid" alt="">
                 <div class="portfolio-info">
                   <h4>Genetic Algorithm Sudoku Solver</h4>
                   <p>check it out on GitHub</p>
@@ -469,7 +493,7 @@
            
             <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
               <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-13.png" class="img-fluid" alt="">
+                <img  draggable="false"src="assets/img/portfolio/app-13.png" class="img-fluid" alt="">
                 <div class="portfolio-info">
                   <h4>Forum webapp</h4>
                   <p>Laravel</p>
@@ -481,7 +505,7 @@
 
             <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
               <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-15.png" class="img-fluid" alt="">
+                <img  draggable="false"src="assets/img/portfolio/app-15.png" class="img-fluid" alt="">
                 <div class="portfolio-info">
                   <h4>Warehouse program</h4>
                   <p>C#, MS .NET </p>
@@ -493,7 +517,7 @@
 
             <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
               <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-12.png" class="img-fluid" alt="">
+                <img  draggable="false"src="assets/img/portfolio/app-12.png" class="img-fluid" alt="">
                 <div class="portfolio-info">
                   <h4>websocket-based (TCP) chat server and client</h4>
                   <p>Server: python, client: Java </p>
@@ -506,7 +530,7 @@
             
             <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
               <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-6.png" class="img-fluid" alt="">
+                <img  draggable="false"src="assets/img/portfolio/app-6.png" class="img-fluid" alt="">
                 <div class="portfolio-info">
                   <h4>Simon game</h4>
                   <p>HTML/CSS/JS</p>
@@ -540,7 +564,7 @@
     
           <div class="col-lg-4 col-md-6 portfolio-item">
             <div class="portfolio-wrap">
-              <img src="assets/img/certificates/1.png" class="img-fluid" alt="">
+              <img  draggable="false"src="assets/img/certificates/1.png" class="img-fluid" alt="">
               <div class="portfolio-info">
                 <a href="assets/img/certificates/1.png"" title="" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
                 <div class="portfolio-links">
@@ -553,7 +577,7 @@
     
           <div class="col-lg-4 col-md-6 portfolio-item">
             <div class="portfolio-wrap">
-              <img src="assets/img/certificates/2.png" class="img-fluid" alt="">
+              <img  draggable="false"src="assets/img/certificates/2.png" class="img-fluid" alt="">
               <div class="portfolio-info">
                 <a href="assets/img/certificates/2.png"" title="" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
                 <div class="portfolio-links">
@@ -565,7 +589,7 @@
     
           <div class="col-lg-4 col-md-6 portfolio-item">
             <div class="portfolio-wrap">
-              <img src="assets/img/certificates/3.png" class="img-fluid" alt="">
+              <img  draggable="false"src="assets/img/certificates/3.png" class="img-fluid" alt="">
               <div class="portfolio-info">
                 <a href="assets/img/certificates/3.png"" title="" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
                 <div class="portfolio-links">
@@ -577,7 +601,7 @@
 
           <div class="col-lg-4 col-md-6 portfolio-item">
             <div class="portfolio-wrap">
-              <img src="assets/img/certificates/4.png" class="img-fluid" alt="">
+              <img  draggable="false"src="assets/img/certificates/4.png" class="img-fluid" alt="">
               <div class="portfolio-info">
                 <a href="assets/img/certificates/4.png"" title="" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
                 <div class="portfolio-links">
@@ -589,7 +613,7 @@
 
           <div class="col-lg-4 col-md-6 portfolio-item">
             <div class="portfolio-wrap">
-              <img src="assets/img/certificates/5.png" class="img-fluid" alt="">
+              <img  draggable="false"src="assets/img/certificates/5.png" class="img-fluid" alt="">
               <div class="portfolio-info">
                 <div class="portfolio-links">
                   <a href="assets/img/certificates/5.png"" title="" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
@@ -601,7 +625,7 @@
 
           <div class="col-lg-4 col-md-6 portfolio-item">
             <div class="portfolio-wrap">
-              <img src="assets/img/certificates/6.png" class="img-fluid" alt="">
+              <img  draggable="false"src="assets/img/certificates/6.png" class="img-fluid" alt="">
               <div class="portfolio-info">
                 <a href="assets/img/certificates/6.png"" title="" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
                 <div class="portfolio-links">
@@ -616,7 +640,7 @@
           <hr>
           <div class="col-lg-4 col-md-6 portfolio-item">
             <div class="portfolio-wrap">
-              <img src="assets/img/awards/1.png" class="img-fluid" alt="">
+              <img  draggable="false"src="assets/img/awards/1.png" class="img-fluid" alt="">
               <div class="portfolio-info">
                 <a href="assets/img/awards/1.png"" title="" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
                 <div class="portfolio-links">
@@ -627,7 +651,7 @@
           </div>
           <div class="col-lg-4 col-md-6 portfolio-item">
             <div class="portfolio-wrap">
-              <img src="assets/img/awards/2.png" class="img-fluid" alt="">
+              <img  draggable="false"src="assets/img/awards/2.png" class="img-fluid" alt="">
               <div class="portfolio-info">
                 <a href="assets/img/awards/2.png"" title="" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
                 <div class="portfolio-links">
@@ -638,7 +662,7 @@
           </div>
           <div class="col-lg-4 col-md-6 portfolio-item">
             <div class="portfolio-wrap">
-              <img src="assets/img/awards/3.png" class="img-fluid" alt="">
+              <img  draggable="false"src="assets/img/awards/3.png" class="img-fluid" alt="">
               <div class="portfolio-info">
                 <a href="assets/img/awards/3.png"" title="" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
                 <div class="portfolio-links">
@@ -649,7 +673,7 @@
           </div>
           <div class="col-lg-4 col-md-6 portfolio-item">
             <div class="portfolio-wrap">
-              <img src="assets/img/awards/4.png" class="img-fluid" alt="">
+              <img  draggable="false"src="assets/img/awards/4.png" class="img-fluid" alt="">
               <div class="portfolio-info">
                 <a href="assets/img/awards/4.png"" title="" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
                 <div class="portfolio-links">
@@ -660,7 +684,7 @@
           </div>
           <div class="col-lg-4 col-md-6 portfolio-item">
             <div class="portfolio-wrap">
-              <img src="assets/img/awards/5.png" class="img-fluid" alt="">
+              <img  draggable="false"src="assets/img/awards/5.png" class="img-fluid" alt="">
               <div class="portfolio-info">
                 <a href="assets/img/awards/5.png"" title="" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
                 <div class="portfolio-links">
@@ -698,6 +722,27 @@
 
   <!-- Main JS File -->
   <script src="assets/js/main.js"></script>
+  <script>
+  const checkbox = document.getElementById('toggleImagesCheckbox');
+  const images = document.querySelectorAll('.toggle-image');
+
+  checkbox.addEventListener('change', () => {
+    images.forEach(img => {
+      if (checkbox.checked) {
+        img.classList.add('show');
+      } else {
+        img.classList.remove('show');
+      }
+    });
+  });
+
+  // Kezdetben elrejtve
+  images.forEach(img => {
+    img.classList.remove('show');
+  });
+
+  </script>
+  
 
 </body>
 
