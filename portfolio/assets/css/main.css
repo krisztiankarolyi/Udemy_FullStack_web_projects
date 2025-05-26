@@ -79,6 +79,12 @@ a:hover {
   text-decoration: none;
 }
 
+.sitename{
+   white-space: nowrap;
+  text-align: center;
+
+}
+
 h1,
 h2,
 h3,
@@ -1315,4 +1321,13 @@ p{ text-align: justify;}
   opacity: 1;
   visibility: visible;
   max-height: 500px; 
+}
+
+main .logo{
+  max-width: 50px;
+  max-height: 35px;
+}
+
+.portfolio-wrap{
+  text-align: center;
 }
