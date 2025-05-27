@@ -460,6 +460,10 @@ h6 {
   bottom: 15px;
 }
 
+#avatar{
+  text-align: center;
+}
+
 /*--------------------------------------------------------------
 # Disable aos animation delay on mobile devices
 --------------------------------------------------------------*/
@@ -670,7 +674,22 @@ section,
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px; /* vagy amennyi rést szeretnél */
+  gap: 10px; 
+}
+
+#certificates .row, #portfolio .row {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+#certificates .row img{
+  max-height: 300px;
+}
+
+#portfolio .row img{
+  height: 230px;
+  width: 300px;
 }
 
 .res-flex-item {
@@ -688,6 +707,7 @@ section,
     flex-direction: column;
   }
 }
+
 
 p{ text-align: justify;}
 
@@ -859,6 +879,8 @@ p{ text-align: justify;}
   position: relative;
   overflow: hidden;
 }
+
+
 
 .portfolio .portfolio-content img {
   transition: 0.3s;
